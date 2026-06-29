@@ -22,6 +22,41 @@ test.describe('Step 6, 7, 8: Budget, Goals & Analytics', () => {
     });
 
     await page.goto('/');
+    await page.waitForLoadState('networkidle');
+
+    // Seed initial transactions for tests that need them (e.g. Reports)
+    await page.waitForFunction(() => (window as any).__SW_STORE !== undefined, null, { timeout: 5000 });
+    await page.evaluate(() => {
+      const sw = (window as any).__SW_STORE;
+      if (!sw) return;
+      const state = sw.getState();
+      if (state.transactions.length > 0) return;
+      const today = new Date().toISOString().split('T')[0];
+      const samples = [
+        { merchant: 'BigBasket', category: 'Food', amount: 2500, date: today, type: 'debit' },
+        { merchant: 'Uber', category: 'Transport', amount: 350, date: today, type: 'debit' },
+        { merchant: 'Netflix', category: 'Subscriptions', amount: 649, date: today, type: 'debit' },
+        { merchant: 'Salary', category: 'Income', amount: 60000, date: today, type: 'credit' },
+        { merchant: 'Amazon', category: 'Shopping', amount: 1299, date: today, type: 'debit' },
+        { merchant: 'Zomato', category: 'Food', amount: 450, date: today, type: 'debit' },
+      ];
+      samples.forEach((s, i) => {
+        sw.getState().addTransaction({ id: `seed-${Date.now()}-${i}`, ...s });
+      });
+    });
+    // Wait for IndexedDB persist and force state reference update
+    await page.waitForTimeout(2000);
+    await page.reload();
+    await page.waitForLoadState('networkidle');
+    await page.waitForTimeout(1000);
+    await page.evaluate(() => {
+      const sw = (window as any).__SW_STORE;
+      if (sw) {
+        const state = sw.getState();
+        sw.setState({ transactions: [...state.transactions] });
+      }
+    });
+    await page.waitForTimeout(500);
   });
 
   test('6.1 to 6.4 - Budget Manager', async ({ page }) => {

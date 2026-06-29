@@ -436,3 +436,8 @@ function migrateLegacyLocalStorage(store: SpendWiseStore) {
 
 // Run the migration immediately
 migrateLegacyLocalStorage(useStore.getState());
+
+// Expose store for E2E test debugging
+if (typeof window !== 'undefined') {
+  (window as any).__SW_STORE = useStore;
+}

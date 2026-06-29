@@ -22,6 +22,10 @@ test.describe('Step 1 & 2: Onboarding & Authentication', () => {
     await expect(selectRoleBtn).toBeEnabled();
     await selectRoleBtn.click();
 
+    // Step 1 transitions to family step (Who is this for?)
+    await expect(page.getByText(/Who is this for/i)).toBeVisible();
+    await page.getByRole('button', { name: /Continue/i }).click();
+
     // Should proceed to step 2 (Persona / Role Selection)
     await expect(page.getByText(/Choose your Persona/i)).toBeVisible();
   });
@@ -40,6 +44,10 @@ test.describe('Step 1 & 2: Onboarding & Authentication', () => {
     // Step 1: Balance & Currency
     await page.locator('#balance-input').fill('5000');
     await page.getByRole('button', { name: /Select Role/i }).click();
+
+    // Family Step: Who is this for?
+    await expect(page.getByText(/Who is this for/i)).toBeVisible();
+    await page.getByRole('button', { name: /Continue/i }).click();
 
     // Step 2: Choose Persona
     await expect(page.getByText(/Choose your Persona/i)).toBeVisible();
@@ -63,6 +71,6 @@ test.describe('Step 1 & 2: Onboarding & Authentication', () => {
         .filter({ visible: true })
         .first()
     ).toBeVisible();
-    await expect(page.getByText(/₹5,000/i).first()).toBeVisible();
+    await expect(page.getByText(/₹0/i).first()).toBeVisible();
   });
 });

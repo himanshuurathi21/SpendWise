@@ -4,7 +4,6 @@ import { Coins, Settings, LogOut, DownloadCloud } from 'lucide-react';
 import { AppView } from '@/types';
 import { haptic } from '@/core/haptic';
 import { IconNavItem, Sep } from './IconNavItem';
-import { ProfileSwitcher } from '@/components/profile/ProfileSwitcher';
 
 interface DesktopSidebarProps {
   activeView: AppView;
@@ -116,10 +115,6 @@ export function DesktopSidebar({
       </nav>
 
       <div className="flex-1" />
-
-      <div className="w-full px-2 mb-2">
-        <ProfileSwitcher />
-      </div>
 
       <div className="flex flex-col items-center gap-1">
         {showInstall && (
