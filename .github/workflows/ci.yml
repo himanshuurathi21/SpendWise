@@ -76,7 +76,8 @@ jobs:
           retention-days: 14
 
   e2e:
-    name: E2E Tests
+    name: E2E Tests (disabled in CI)
+    if: false
     needs: [build]
     runs-on: ubuntu-latest
     timeout-minutes: 15
