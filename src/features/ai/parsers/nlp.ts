@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import { callGemini } from '@/core/api/gemini';
 import { Category } from '@/types';
 
@@ -43,7 +42,8 @@ Return ONLY the JSON array of objects.`;
       generationConfig: { temperature: 0.1, responseMimeType: 'application/json' },
     });
 
-    const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const rawText = (data as any).candidates?.[0]?.content?.parts?.[0]?.text;
     if (rawText) {
       const cleanJson = rawText
         .replace(/^```(?:json)?\n?/i, '')
@@ -101,10 +101,9 @@ Return ONLY the JSON array of objects.`;
   // Helper to determine credit and category
   const analyzeItem = (
     desc: string,
-    fullText: string
+    _fullText: string
   ): { category: Category; type: 'credit' | 'debit' } => {
     const lowerDesc = desc.toLowerCase();
-    const lowerFull = fullText.toLowerCase();
 
     // Check explicit debit categories first
     let category: Category | null = null;

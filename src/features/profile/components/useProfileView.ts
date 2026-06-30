@@ -1,9 +1,6 @@
-/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { SpendWiseConfig } from '@/types/config';
-import { exportCSV } from '@/utils/export';
 import { parseTransactionsJSON } from '@/utils/import';
-import { Transaction } from '@/types';
 import { encryptData, decryptData } from '@/core/encryption';
 import { useStore } from '@/store';
 import { downloadDatabaseBackup, importDatabase } from '@/db/backup';
@@ -20,10 +17,19 @@ export const FONT_LABELS: Record<FontSizeKey, string> = {
   'text-xl': 'XL',
 };
 
+interface ProfileNotification {
+  id: string;
+  type: string;
+  title: string;
+  message: string;
+  timestamp: string;
+  read: boolean;
+}
+
 export function useProfileView(
   config: SpendWiseConfig | null,
   onUpdateConfig: (cfg: SpendWiseConfig) => void,
-  addNotification?: (n: any) => void
+  addNotification?: (n: ProfileNotification) => void
 ) {
   const store = useStore();
   const { setActiveCurrency } = useCurrency();
@@ -132,8 +138,8 @@ export function useProfileView(
       await sendPhoneOtp(phone);
       setOtpSent(true);
       haptic.success();
-    } catch (err: any) {
-      setOtpError(err.message || 'Failed to send OTP');
+    } catch (err) {
+      setOtpError((err as Error).message || 'Failed to send OTP');
       haptic.error();
     } finally {
       setOtpLoading(false);
@@ -151,8 +157,8 @@ export function useProfileView(
       const prefs = store.userPreferences;
       store.setUserPreferences({ ...prefs, phoneVerified: true });
       haptic.success();
-    } catch (err: any) {
-      setOtpError(err.message || 'Failed to verify OTP');
+    } catch (err) {
+      setOtpError((err as Error).message || 'Failed to verify OTP');
       haptic.error();
     } finally {
       setOtpLoading(false);

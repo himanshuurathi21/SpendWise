@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * SpendWise — Supabase Integration Layer
  *
@@ -54,7 +53,7 @@ export async function supabaseRequest(
   path: string,
   options: RequestInit = {},
   token?: string
-): Promise<any> {
+): Promise<Record<string, unknown>[] | null> {
   if (!isSupabaseConfigured) throw new Error('Supabase not configured');
 
   const res = await fetch(`${SUPABASE_URL}/rest/v1${path}`, {
@@ -206,18 +205,18 @@ export async function pullTransactions(
   let path = `/transactions?user_id=eq.${userId}&order=date.desc`;
   if (since) path += `&date=gte.${since}`;
 
-  const rows: any[] = (await supabaseRequest(path, {}, token)) ?? [];
+  const rows = ((await supabaseRequest(path, {}, token)) ?? []) as Record<string, unknown>[];
   return rows.map(r => ({
-    id: r.id,
-    date: r.date,
+    id: r.id as string,
+    date: r.date as string,
     amount: Number(r.amount),
     type: r.type as 'debit' | 'credit',
-    category: r.category,
-    merchant: r.merchant,
-    description: r.description ?? undefined,
-    tags: r.tags ?? [],
-    confidence: r.confidence ?? undefined,
-    aiParsed: r.ai_parsed ?? false,
+    category: r.category as string,
+    merchant: r.merchant as string,
+    description: (r.description as string) ?? undefined,
+    tags: (r.tags as string[]) ?? [],
+    confidence: r.confidence as number | undefined,
+    aiParsed: (r.ai_parsed as boolean) ?? false,
     isNew: false,
   }));
 }
@@ -261,12 +260,13 @@ export async function pullGamification(
   if (!isSupabaseConfigured) return null;
   const rows =
     (await supabaseRequest(`/gamification?user_id=eq.${userId}&limit=1`, {}, token)) ?? [];
-  if (!rows[0]) return null;
+  const row = rows[0] as Record<string, unknown> | undefined;
+  if (!row) return null;
   return {
-    totalXP: rows[0].total_xp,
-    level: rows[0].level,
-    streak: rows[0].streak,
-    lastActive: rows[0].last_active,
+    totalXP: row.total_xp as number,
+    level: row.level as number,
+    streak: row.streak as number,
+    lastActive: row.last_active as string,
   };
 }
 

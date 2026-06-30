@@ -30,6 +30,17 @@ const DashboardView = lazy(() =>
   import('@/features/dashboard/DashboardView').then(m => ({ default: m.DashboardView }))
 );
 
+// Cross-feature injected components (FSD: page layer injects into feature components)
+import { PricingCard } from '@/features/pricing/PricingCard';
+import { BillingView } from '@/features/billing/BillingView';
+import { SubscriptionCalendar } from '@/features/subscriptions/components/SubscriptionCalendar';
+import { PriceHikeDetector } from '@/features/subscriptions/components/PriceHikeDetector';
+import MandateManager from '@/features/sync/components/MandateManager';
+import { useGamification } from '@/features/gamification/hooks/useGamification';
+import { useGoals } from '@/features/goals/hooks/useGoals';
+import { usePortfolio } from '@/features/portfolio/hooks/usePortfolio';
+import { useBudgets } from '@/hooks/useBudgets';
+
 import { SpendWiseConfig } from '@/types/config';
 import { SpendWiseStore, ParentalControlState } from '@/store';
 import { AppState } from '@/types/state';
@@ -103,6 +114,28 @@ export const ViewRenderer: React.FC<ViewRendererProps> = ({
     notifState,
   } = appState;
 
+  const gamificationData = useGamification(transactions);
+  const { goals } = useGoals();
+  const { netWorth } = usePortfolio();
+  const { budgetStats } = useBudgets();
+  const injectedPricingCard = (
+    <PricingCard currentPlan={config?.isFamily ? 'family' : 'individual'} compact />
+  );
+  const injectedBillingView = (
+    <BillingView
+      onPlanChange={plan => {
+        setConfig({ ...config, isFamily: plan === 'family' } as SpendWiseConfig);
+      }}
+    />
+  );
+  const injectedMandateManager = <MandateManager mandates={store.mandates} currency={currency} />;
+  const injectedSubscriptionCalendar = (
+    <SubscriptionCalendar subscriptions={[]} currency={currency} />
+  );
+  const injectedPriceHikeDetector = (
+    <PriceHikeDetector transactions={transactions} currency={currency} />
+  );
+
   return (
     <>
       {activeView === 'dashboard' && alertState.alerts.length > 0 && (
@@ -131,6 +164,14 @@ export const ViewRenderer: React.FC<ViewRendererProps> = ({
               hideBalances={pcSettings.hideBalances}
               onTogglePrivacy={store.togglePrivacy}
               config={config}
+              streak={gamificationData.streak}
+              healthScore={gamificationData.healthScore}
+              level={gamificationData.level}
+              levelName={gamificationData.levelName}
+              savingsRate={gamificationData.savingsRate}
+              goals={goals}
+              netWorth={netWorth}
+              budgetStats={budgetStats}
             />
           </ViewWrapper>
         )}
@@ -174,6 +215,8 @@ export const ViewRenderer: React.FC<ViewRendererProps> = ({
                 patterns={recurringData}
                 currency={currency}
                 transactions={transactions}
+                subscriptionCalendar={injectedSubscriptionCalendar}
+                priceHikeDetector={injectedPriceHikeDetector}
               />
             </ViewWrapper>
           </DesktopOnlyGuard>
@@ -256,13 +299,13 @@ export const ViewRenderer: React.FC<ViewRendererProps> = ({
                 if (config) {
                   const nextConfig = { ...config, initialBalance: 0 };
                   setConfig(nextConfig);
-                  // Handled by App.tsx through setConfig, but let's make sure it's saved
-                  // The parent handles saving in App.tsx
                 }
               }}
               transactions={transactions}
               onNavigate={onNavigate}
               addNotification={notifState.addNotification}
+              pricingCard={injectedPricingCard}
+              billingView={injectedBillingView}
             />
           </ViewWrapper>
         )}
@@ -283,7 +326,11 @@ export const ViewRenderer: React.FC<ViewRendererProps> = ({
 
         {activeView === 'subscriptions' && (
           <ViewWrapper id="subscriptions" activeView={activeView}>
-            <SubscriptionManager patterns={recurringData} currency={currency} />
+            <SubscriptionManager
+              patterns={recurringData}
+              currency={currency}
+              mandateManager={injectedMandateManager}
+            />
           </ViewWrapper>
         )}
 
@@ -377,6 +424,8 @@ export const ViewRenderer: React.FC<ViewRendererProps> = ({
               transactions={transactions}
               onNavigate={onNavigate}
               addNotification={notifState.addNotification}
+              pricingCard={injectedPricingCard}
+              billingView={injectedBillingView}
             />
           </ViewWrapper>
         )}

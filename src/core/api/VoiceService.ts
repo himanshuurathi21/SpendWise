@@ -39,7 +39,8 @@ export const parseVoiceWithGemini = async (
     },
   });
 
-  const resultText = data.candidates[0].content.parts[0].text;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const resultText = (data as any).candidates[0].content.parts[0].text;
 
   try {
     const result = JSON.parse(resultText);
@@ -106,7 +107,8 @@ export const parseMasterVoiceWithGemini = async (
     },
   });
 
-  const resultText = data.candidates[0].content.parts[0].text;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const resultText = (data as any).candidates[0].content.parts[0].text;
 
   try {
     const result = JSON.parse(resultText);

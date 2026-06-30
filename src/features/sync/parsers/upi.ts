@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 /**
  * upi.ts — Complete UPI / Bank Sync Engine
  *
@@ -14,6 +13,7 @@ import { Transaction, DefaultCategory, UPIMandate, MandateFrequency, MandateType
 import { useStore } from '@/store';
 import { formatLocalYYYYMMDD } from '@/utils/date';
 import { SUPABASE_URL, SUPABASE_ANON_KEY } from '@/config/env';
+import { MERCHANT_CATEGORY_MAP } from '@/data/categoryMap';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -36,142 +36,6 @@ export interface ReviewTransaction extends ParsedUPITransaction {
   selected: boolean;
 }
 
-// ─── Category Keyword Map ─────────────────────────────────────────────────────
-
-const MERCHANT_CATEGORY_MAP: Record<string, DefaultCategory> = {
-  // Food & Dining
-  swiggy: 'Food',
-  zomato: 'Food',
-  mcdonalds: 'Food',
-  dominos: 'Food',
-  kfc: 'Food',
-  pizzahut: 'Food',
-  starbucks: 'Food',
-  dunkin: 'Food',
-  subway: 'Food',
-  blinkit: 'Food',
-  bigbasket: 'Food',
-  grofers: 'Food',
-  instamart: 'Food',
-  zepto: 'Food',
-  fresh: 'Food',
-
-  // Transport
-  uber: 'Transport',
-  ola: 'Transport',
-  rapido: 'Transport',
-  irctc: 'Transport',
-  railway: 'Transport',
-  redbus: 'Transport',
-  makemytrip: 'Transport',
-  goibibo: 'Transport',
-  petrol: 'Transport',
-  bpcl: 'Transport',
-  hpcl: 'Transport',
-  indianoil: 'Transport',
-  metro: 'Transport',
-  fastag: 'Transport',
-  nhai: 'Transport',
-
-  // Shopping
-  amazon: 'Shopping',
-  flipkart: 'Shopping',
-  myntra: 'Shopping',
-  ajio: 'Shopping',
-  meesho: 'Shopping',
-  nykaa: 'Shopping',
-  snapdeal: 'Shopping',
-  tatacliq: 'Shopping',
-  reliance: 'Shopping',
-  dmart: 'Shopping',
-  bigbazar: 'Shopping',
-
-  // Subscriptions
-  netflix: 'Subscriptions',
-  spotify: 'Subscriptions',
-  hotstar: 'Subscriptions',
-  disney: 'Subscriptions',
-  youtube: 'Subscriptions',
-  prime: 'Subscriptions',
-  zee5: 'Subscriptions',
-  sonyliv: 'Subscriptions',
-  jiocinema: 'Subscriptions',
-  mangotv: 'Subscriptions',
-  linkedin: 'Subscriptions',
-  notion: 'Subscriptions',
-  adobe: 'Subscriptions',
-  microsoft: 'Subscriptions',
-
-  // Utilities
-  electricity: 'Utilities',
-  bses: 'Utilities',
-  tata: 'Utilities',
-  airtel: 'Utilities',
-  jio: 'Utilities',
-  vi: 'Utilities',
-  vodafone: 'Utilities',
-  mahanagar: 'Utilities',
-  gas: 'Utilities',
-  water: 'Utilities',
-  internet: 'Utilities',
-  broadband: 'Utilities',
-
-  // Health
-  apollo: 'Health',
-  medanta: 'Health',
-  fortis: 'Health',
-  '1mg': 'Health',
-  pharmeasy: 'Health',
-  netmeds: 'Health',
-  hospital: 'Health',
-  clinic: 'Health',
-  pharmacy: 'Health',
-  chemist: 'Health',
-  doctor: 'Health',
-  lab: 'Health',
-
-  // Education
-  udemy: 'Education',
-  coursera: 'Education',
-  unacademy: 'Education',
-  byju: 'Education',
-  vedantu: 'Education',
-  tuition: 'Education',
-  school: 'Education',
-  college: 'Education',
-  fee: 'Education',
-
-  // Entertainment
-  bookmyshow: 'Entertainment',
-  pvr: 'Entertainment',
-  inox: 'Entertainment',
-  cinemas: 'Entertainment',
-  gaming: 'Entertainment',
-  steam: 'Entertainment',
-  playstation: 'Entertainment',
-
-  // Travel
-  airasia: 'Travel',
-  indigo: 'Travel',
-  spicejet: 'Travel',
-  vistara: 'Travel',
-  airindia: 'Travel',
-  hotel: 'Travel',
-  oyo: 'Travel',
-  airbnb: 'Travel',
-  yatra: 'Travel',
-
-  // Business / Income
-  salary: 'Income',
-  stipend: 'Income',
-  freelance: 'Income',
-  refund: 'Income',
-  cashback: 'Income',
-  reward: 'Income',
-  dividend: 'Income',
-  interest: 'Income',
-};
-
 function detectCategory(merchant: string): DefaultCategory {
   const m = merchant.toLowerCase();
 
@@ -179,7 +43,7 @@ function detectCategory(merchant: string): DefaultCategory {
   const memory = useStore.getState().merchantMemory ?? {};
   if (memory[m]) return memory[m].category as DefaultCategory;
 
-  // Keyword match
+  // Keyword match from shared map
   for (const [keyword, category] of Object.entries(MERCHANT_CATEGORY_MAP)) {
     if (m.includes(keyword)) return category;
   }
@@ -454,7 +318,7 @@ function detectMandateProvider(text: string): string {
   return 'UPI';
 }
 
-function detectMandateType(merchant: string, amount: number): MandateType {
+function detectMandateType(merchant: string, _amount: number): MandateType {
   const m = merchant.toLowerCase();
   if (/loan|emi|finance|hdfc.*emi|icici.*emi|bajaj|tata.*capital|kredit/i.test(m)) return 'emi';
   if (/sip|mutual\s*fund|mf|hdfc.*mf|icici.*mf|invest/i.test(m)) return 'sip';
@@ -509,8 +373,6 @@ export function parseUPIMandateString(text: string): UPIMandate | null {
   const provider = detectMandateProvider(text);
   const freq = detectMandateFrequency(text);
   const mandateType = detectMandateType(merchant, amount);
-
-  const now = formatLocalYYYYMMDD(new Date());
 
   // For creation mandates, compute next debit based on frequency
   const nextDebitDate = new Date();
@@ -607,14 +469,14 @@ export function parseUPIString(text: string): ParsedUPITransaction | null {
   for (const { pattern, extract } of UPI_PATTERNS) {
     const m = text.match(pattern);
     if (!m) continue;
-    const result: any = extract(m);
-    if (result.merchant) merchant = result.merchant;
-    if (result.amount) amount = result.amount;
+    const result: Record<string, unknown> = extract(m);
+    if (result.merchant) merchant = result.merchant as string;
+    if (result.amount) amount = result.amount as number;
     if (result.type) type = result.type as 'debit' | 'credit';
-    if (result.upiId) upiId = result.upiId;
-    if (result.bankRef) bankRef = result.bankRef;
-    if (result.date) date = result.date;
-    if (result.currency) currency = result.currency;
+    if (result.upiId) upiId = result.upiId as string;
+    if (result.bankRef) bankRef = result.bankRef as string;
+    if (result.date) date = result.date as string;
+    if (result.currency) currency = result.currency as string;
   }
 
   // Extract amount if not yet found
@@ -954,21 +816,24 @@ export async function fetchRazorpayTransactions(
   }
   const data = await res.json();
 
-  const payments: any[] = data?.items ?? [];
+  const items = (data as Record<string, unknown>)?.items as Record<string, unknown>[] | undefined;
+  const payments: Record<string, unknown>[] = items ?? [];
 
+  /* eslint-disable @typescript-eslint/no-explicit-any */
   return payments
-    .filter(p => p.status === 'captured')
+    .filter(p => (p as any).status === 'captured')
     .map(p => ({
-      id: `rzp_${p.id}`,
-      merchant: p.description || p.email?.split('@')[0] || 'Razorpay Payment',
-      amount: p.amount / 100, // Razorpay stores in paise
-      type: 'credit' as const, // received payment = credit
+      id: `rzp_${(p as any).id}`,
+      merchant: (p as any).description || (p as any).email?.split('@')[0] || 'Razorpay Payment',
+      amount: (p as any).amount / 100,
+      type: 'credit' as const,
       category: 'Income' as DefaultCategory,
-      date: formatLocalYYYYMMDD(new Date(p.created_at * 1000)),
-      bankRef: p.id,
+      date: formatLocalYYYYMMDD(new Date((p as any).created_at * 1000)),
+      bankRef: (p as any).id,
       rawText: JSON.stringify(p),
       confidence: 'high' as const,
     }));
+  /* eslint-enable @typescript-eslint/no-explicit-any */
 }
 
 // ─── Merchant Category Learning ───────────────────────────────────────────────

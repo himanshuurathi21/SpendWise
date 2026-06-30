@@ -161,26 +161,25 @@ const AnalyticsSkeleton = () => (
 );
 
 // ─── Main export ──────────────────────────────────────────────────────────────
-export const SkeletonLoader: React.FC<SkeletonLoaderProps> = ({
-  variant = 'dashboard',
-  className = '',
-}) => {
-  const content = (() => {
-    switch (variant) {
-      case 'list':
-        return <ListSkeleton />;
-      case 'chart':
-        return <ChartSkeleton />;
-      case 'goals':
-        return <GoalsSkeleton />;
-      case 'budget':
-        return <BudgetSkeleton />;
-      case 'analytics':
-        return <AnalyticsSkeleton />;
-      default:
-        return <DashboardSkeleton />;
-    }
-  })();
+export const SkeletonLoader: React.FC<SkeletonLoaderProps> = React.memo(
+  ({ variant = 'dashboard', className = '' }) => {
+    const content = (() => {
+      switch (variant) {
+        case 'list':
+          return <ListSkeleton />;
+        case 'chart':
+          return <ChartSkeleton />;
+        case 'goals':
+          return <GoalsSkeleton />;
+        case 'budget':
+          return <BudgetSkeleton />;
+        case 'analytics':
+          return <AnalyticsSkeleton />;
+        default:
+          return <DashboardSkeleton />;
+      }
+    })();
 
-  return <div className={className}>{content}</div>;
-};
+    return <div className={className}>{content}</div>;
+  }
+);

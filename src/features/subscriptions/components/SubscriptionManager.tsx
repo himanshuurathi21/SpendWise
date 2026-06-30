@@ -16,9 +16,6 @@ import AddSubscriptionModal from '@/features/subscriptions/components/AddSubscri
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { SubscriptionCalendar } from '@/features/subscriptions/components/SubscriptionCalendar';
 import { useSubscriptionManager } from '@/features/subscriptions/hooks/useSubscriptionManager';
-// FSD VIOLATION: importing from sync feature — inject via mandateManager prop instead
-// TODO: remove direct import once all consumers pass mandateManager prop
-import MandateManager from '@/features/sync/components/MandateManager';
 import { useStore } from '@/store';
 
 interface SubscriptionManagerProps {
@@ -155,7 +152,7 @@ export default function SubscriptionManager({
       </div>
 
       {activeView === 'mandates' ? (
-        (mandateManagerProp ?? <MandateManager mandates={mandates} currency={currency} />)
+        mandateManagerProp
       ) : (
         <>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">

@@ -1,6 +1,5 @@
-/* eslint-disable no-console, @typescript-eslint/no-unused-vars */
+/* eslint-disable no-console */
 import { db } from '@/db/db';
-import { useStore } from '@/store';
 
 export const runDexieMigration = async () => {
   try {

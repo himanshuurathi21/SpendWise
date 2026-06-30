@@ -1,10 +1,26 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { isSupabaseConfigured } from '@/core/api/supabase';
 
+interface GeminiContentPart {
+  text?: string;
+  inlineData?: { mimeType: string; data: string };
+}
+
+interface GeminiContent {
+  role?: string;
+  parts: GeminiContentPart[];
+}
+
+interface GeminiGenerationConfig {
+  temperature?: number;
+  responseMimeType?: string;
+  maxOutputTokens?: number;
+  topP?: number;
+}
+
 interface GeminiCallParams {
-  contents: any[];
-  generationConfig?: any;
-  system_instruction?: any;
+  contents: GeminiContent[];
+  generationConfig?: GeminiGenerationConfig;
+  system_instruction?: { parts: GeminiContentPart[] };
 }
 
 /**
@@ -13,7 +29,7 @@ interface GeminiCallParams {
  * 1. Safe Production Proxy: Calls Supabase Edge Function proxy (GAP-B) if Supabase is configured.
  * 2. Local Fallback: Direct call to Google APIs if local VITE_GEMINI_API_KEY is present in dev.
  */
-export async function callGemini(params: GeminiCallParams): Promise<any> {
+export async function callGemini(params: GeminiCallParams): Promise<Record<string, unknown>> {
   const localApiKey = import.meta.env.VITE_GEMINI_API_KEY;
 
   if (isSupabaseConfigured) {
@@ -101,7 +117,8 @@ export async function* streamGemini(params: GeminiCallParams): AsyncGenerator<st
   if (isSupabaseConfigured) {
     try {
       const data = await callGemini(params);
-      const text = data.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const text = (data as any).candidates?.[0]?.content?.parts?.[0]?.text ?? '';
       yield text;
       return;
     } catch (e) {

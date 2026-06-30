@@ -20,10 +20,6 @@ import { Transaction, LinkedAccount, SyncView } from '@/types';
 import { UPI_PROVIDERS } from '@/features/sync/parsers/upi';
 import CSVImporter from '@/features/sync/components/CSVImporter';
 import { CloudSync } from '@/features/sync/components/CloudSync';
-// FSD VIOLATION: importing from shared feature — inject via props instead
-// TODO: remove direct import once all consumers pass sharedWalletsData prop
-import { useSharedWallets } from '@/features/shared/hooks/useSharedWallets';
-import { useAuth } from '@/hooks/useAuth';
 
 export interface SyncDashboardProps {
   totalUPISpend: number;
@@ -44,7 +40,12 @@ export interface SyncDashboardProps {
     pendingInvites: Array<{ memberId: string; groupName: string }>;
     acceptInvite: (memberId: string) => Promise<void>;
     declineInvite: (memberId: string) => Promise<void>;
-    createGroup: (name: string, purpose: string, emoji: string) => Promise<void>;
+    createGroup: (
+      name: string,
+      purpose: string,
+      creatorName: string,
+      creatorEmoji?: string
+    ) => Promise<void>;
   };
 }
 
@@ -62,12 +63,14 @@ export function SyncDashboard({
   onNavigate,
   sharedWalletData: sharedWalletDataProp,
 }: SyncDashboardProps) {
-  const { user } = useAuth();
-  const userId = user?.id ?? 'local-user';
-  const userEmail = user?.email ?? null;
-  const sharedWalletsHook = useSharedWallets(userId, userEmail);
   const { groups, pendingInvites, acceptInvite, declineInvite, createGroup } =
-    sharedWalletDataProp ?? sharedWalletsHook;
+    sharedWalletDataProp ?? {
+      groups: [],
+      pendingInvites: [],
+      acceptInvite: async () => {},
+      declineInvite: async () => {},
+      createGroup: async () => {},
+    };
 
   const formatDate = (iso: string) =>
     new Intl.DateTimeFormat('en-IN', {

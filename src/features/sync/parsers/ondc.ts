@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 /**
  * ondc.ts — ONDC (Open Network for Digital Commerce) Parser
  *
@@ -8,6 +7,7 @@
 
 import { Transaction, DefaultCategory } from '@/types';
 import { formatLocalYYYYMMDD } from '@/utils/date';
+import { inferCategory } from '@/data/categoryMap';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -24,38 +24,11 @@ export interface ParsedONDTransaction {
   confidence: 'high' | 'medium' | 'low';
 }
 
-// ─── ONDC Merchant Category Map ───────────────────────────────────────────────
-
-const ONDC_MERCHANT_CATEGORY_MAP: Record<string, DefaultCategory> = {
-  // Food delivery
-  swiggy: 'Food',
-  zomato: 'Food',
-  dominos: 'Food',
-  pizzahut: 'Food',
-  kfc: 'Food',
-  mcdonalds: 'Food',
-  subway: 'Food',
-  burgerking: 'Food',
-
-  // Grocery
-  bigbasket: 'Food',
-  grofers: 'Food',
-  blinkit: 'Food',
-  zepto: 'Food',
-  jiodmart: 'Food',
-
-  // Fashion
-  myntra: 'Shopping',
-  ajio: 'Shopping',
-  nykaa: 'Shopping',
-
-  // Electronics
-  croma: 'Shopping',
-  reliance: 'Shopping',
-
-  // General retail
+// Keep ONDC-specific entries that are too generic for the global map
+const ONDC_SPECIFIC_MAP: Record<string, DefaultCategory> = {
   magicpin: 'Shopping',
-  dunzo: 'Shopping',
+  burgerking: 'Food',
+  jiodmart: 'Food',
   shop: 'Shopping',
   retail: 'Shopping',
   store: 'Shopping',
@@ -65,10 +38,12 @@ const ONDC_MERCHANT_CATEGORY_MAP: Record<string, DefaultCategory> = {
 
 function detectCategory(merchant: string): DefaultCategory {
   const m = merchant.toLowerCase();
-  for (const [keyword, category] of Object.entries(ONDC_MERCHANT_CATEGORY_MAP)) {
+  // Check ONDC-specific entries first
+  for (const [keyword, category] of Object.entries(ONDC_SPECIFIC_MAP)) {
     if (m.includes(keyword)) return category;
   }
-  return 'Shopping'; // safe default for ONDC
+  // Fall back to shared inferCategory
+  return inferCategory(merchant) as DefaultCategory;
 }
 
 // ─── ONDC Regex Patterns ──────────────────────────────────────────────────────
@@ -143,11 +118,11 @@ export function parseONDCNotification(text: string): ParsedONDTransaction | null
   for (const { pattern, extract } of ONDC_PATTERNS) {
     const m = text.match(pattern);
     if (!m) continue;
-    const result: any = extract(m);
-    if (result.merchant) merchant = result.merchant;
-    if (result.amount) amount = result.amount;
-    if (result.orderId) orderId = result.orderId;
-    if (result.buyerApp) buyerApp = result.buyerApp;
+    const result: Record<string, unknown> = extract(m);
+    if (result.merchant) merchant = result.merchant as string;
+    if (result.amount) amount = result.amount as number;
+    if (result.orderId) orderId = result.orderId as string;
+    if (result.buyerApp) buyerApp = result.buyerApp as string;
   }
 
   // Fallback: extract amount from generic patterns
@@ -245,7 +220,7 @@ export function parseMultipleONDCMessages(bulkText: string): ParsedONDTransactio
 
 export function ondToAppTransaction(
   p: ParsedONDTransaction,
-  currency = '₹'
+  _currency = '₹'
 ): Omit<Transaction, 'id'> {
   return {
     merchant: p.merchant,
@@ -257,4 +232,4 @@ export function ondToAppTransaction(
   };
 }
 
-export { ONDC_BUYER_APPS, ONDC_MERCHANT_CATEGORY_MAP };
+export { ONDC_BUYER_APPS };

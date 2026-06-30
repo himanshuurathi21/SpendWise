@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 import { Transaction } from '@/types';
 
 /**
@@ -22,9 +21,11 @@ export async function parseTransactionsJSON(
         const validTransactions: Transaction[] = [];
         const errors: string[] = [];
 
-        parsed.forEach((item: any, index: number) => {
+        parsed.forEach((item: Record<string, unknown>, index: number) => {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const i = item as any;
           // Basic validation
-          if (!item.amount || !item.merchant || !item.category || !item.date) {
+          if (!i.amount || !i.merchant || !i.category || !i.date) {
             errors.push(
               `Row ${index + 1}: Missing required fields (amount, merchant, category, date).`
             );
@@ -32,20 +33,20 @@ export async function parseTransactionsJSON(
           }
 
           validTransactions.push({
-            id: item.id || `imported-${Date.now()}-${index}`,
-            amount: Number(item.amount),
-            merchant: item.merchant,
-            category: item.category,
-            date: item.date,
-            type: item.type === 'credit' ? 'credit' : 'debit',
-            description: item.description || '',
-            tags: Array.isArray(item.tags) ? item.tags : item.tags ? [item.tags] : [],
-            status: item.status || 'completed',
+            id: i.id || `imported-${Date.now()}-${index}`,
+            amount: Number(i.amount),
+            merchant: i.merchant,
+            category: i.category,
+            date: i.date,
+            type: i.type === 'credit' ? 'credit' : 'debit',
+            description: i.description || '',
+            tags: Array.isArray(i.tags) ? i.tags : i.tags ? [i.tags] : [],
+            status: i.status || 'completed',
           });
         });
 
         resolve({ transactions: validTransactions, errors });
-      } catch (err) {
+      } catch (_) {
         resolve({ transactions: [], errors: ['Invalid JSON file.'] });
       }
     };

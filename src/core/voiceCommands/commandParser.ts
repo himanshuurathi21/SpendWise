@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 /**
  * Voice Command Parser — SpendWise Master Voice Engine
  *
@@ -6,7 +5,7 @@
  * This file provides the fallback local parser and validation logic.
  */
 
-import { VoiceCommand, VoiceIntent, VoiceEntities, AppView } from '@/core/voiceCommands/types';
+import { VoiceCommand, AppView } from '@/core/voiceCommands/types';
 import { FALLBACK_PATTERNS } from '@/core/voiceCommands/fallbackPatterns';
 
 // ─── Indian Number Parser ─────────────────────────────────────────────────────

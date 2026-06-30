@@ -1,17 +1,13 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
 import { useStore } from '@/store';
-import { Transaction } from '@/types';
 
 export function useParentalManager() {
   const store = useStore();
   const settings = store.parentalState;
-  const transactions = store.transactions;
-
   // Setup state
   const [setupStep, setSetupStep] = useState<'welcome' | 'pin' | 'limits'>('welcome');
   const [newPin, setNewPin] = useState('');
-  const [pinError, setPinError] = useState('');
+  const [pinError] = useState('');
 
   // Unlocking state
   const [unlockPin, setUnlockPin] = useState('');

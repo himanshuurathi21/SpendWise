@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import { useState, useEffect } from 'react';
 import { BeforeInstallPromptEvent } from '@/types/dom';
 
@@ -46,7 +45,7 @@ export function usePWAInstall() {
     }
 
     await deferredPrompt.prompt();
-    const { outcome } = await deferredPrompt.userChoice;
+    await deferredPrompt.userChoice;
     setDeferredPrompt(null);
   };
 

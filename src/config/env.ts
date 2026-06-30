@@ -18,7 +18,8 @@ export const LOG_LEVEL = getEnv('VITE_LOG_LEVEL', 'INFO');
 export const APP_VERSION = getEnv('VITE_APP_VERSION', '0.0.0');
 export const RAZORPAY_PROXY_URL = getEnv('VITE_RAZORPAY_PROXY_URL', '/functions/v1/razorpay-proxy');
 export const RESEND_API_KEY = getEnv('RESEND_API_KEY');
-export const EXCHANGE_RATE_API_KEY = getEnv('VITE_EXCHANGE_RATE_API_KEY');
+// Server-only: no VITE_ prefix so it is not bundled into the client
+export const EXCHANGE_RATE_API_KEY = getEnv('EXCHANGE_RATE_API_KEY');
 
 export function validateEnv(): string[] {
   const errors: string[] = [];

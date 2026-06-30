@@ -2,10 +2,6 @@ import { useState } from 'react';
 import { RefreshCw, Calendar, TrendingUp, Clock, Zap, LayoutGrid } from 'lucide-react';
 import { RecurringPattern, Transaction } from '@/types';
 import { useCategories } from '@/hooks/useCategories';
-// FSD VIOLATION: importing from subscriptions feature — inject via props instead
-// TODO: remove direct imports once all consumers pass these as props
-import { SubscriptionCalendar } from '@/features/subscriptions/components/SubscriptionCalendar';
-import { PriceHikeDetector } from '@/features/subscriptions/components/PriceHikeDetector';
 
 interface RecurringViewProps {
   patterns: RecurringPattern[];
@@ -266,16 +262,6 @@ export default function RecurringView({
 }: RecurringViewProps) {
   const [view, setView] = useState<'list' | 'calendar'>('list');
 
-  // Build calendar-friendly subscription list from recurring patterns
-  const calendarSubs = patterns.map((p, i) => ({
-    id: `${p.merchant}-${i}`,
-    name: p.merchant,
-    amount: Math.round(p.avgAmount),
-    billingDay: parseInt(p.nextExpected.split('-')[2] ?? '1', 10) || 1,
-    emoji: p.category === 'Subscriptions' ? '📺' : p.category === 'Food & Dining' ? '🍔' : '💳',
-    color: p.frequency === 'weekly' ? '#3b82f6' : p.frequency === 'annual' ? '#f59e0b' : '#a855f7',
-  }));
-
   return (
     <div className="animate-fade-in-up">
       {/* Header */}
@@ -327,11 +313,7 @@ export default function RecurringView({
 
           {/* Price Hike Detection */}
           {transactions.length > 0 && (
-            <div className="card p-4 sm:p-5 mb-5">
-              {priceHikeDetectorProp ?? (
-                <PriceHikeDetector transactions={transactions} currency={currency} />
-              )}
-            </div>
+            <div className="card p-4 sm:p-5 mb-5">{priceHikeDetectorProp}</div>
           )}
 
           {patterns.length === 0 ? (
@@ -347,9 +329,7 @@ export default function RecurringView({
           )}
         </>
       ) : (
-        (subscriptionCalendarProp ?? (
-          <SubscriptionCalendar subscriptions={calendarSubs} currency={currency} />
-        ))
+        subscriptionCalendarProp
       )}
     </div>
   );

@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 /**
  * advisor.ts — Greatly Improved SpendWise AI Advisor
  *
@@ -19,6 +18,12 @@
 
 import { callGemini } from '@/core/api/gemini';
 import { Transaction } from '@/types';
+import { handleBudgetQuery } from './topics/budget';
+import { handleSavingsQuery } from './topics/savings';
+import { handleSpendingQuery } from './topics/spending';
+import { handleSubscriptionsQuery } from './topics/subscriptions';
+import { handleGoalsQuery } from './topics/goals';
+import { handleGeneralQuery } from './topics/general';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -65,12 +70,11 @@ export interface SpendingPersonalityResult {
 
 export function buildBriefing(
   transactions: Transaction[],
-  currency = '₹',
+  _currency = '₹',
   creditScore?: number,
   creditScoreDate?: string
 ): FinancialBriefing {
   const now = new Date();
-  const month = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
   const monthLabel = now.toLocaleString('en-IN', { month: 'long', year: 'numeric' });
 
   // Use all transactions (not just this month) for richer context
@@ -249,170 +253,42 @@ export async function getFinancialAdvice(
       },
     });
 
-    const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const text = (data as any)?.candidates?.[0]?.content?.parts?.[0]?.text;
     if (text?.trim()) return text.trim();
-  } catch (err) {
+  } catch (_) {
     // Fall through to local engine
   }
 
   // ── Local rule-based fallback (20+ rules) ────────────────────────
-  return localAdvisor(query, briefing, currency);
+  return localAdvisor(query, transactions, briefing, currency);
 }
 
 // ─── Local Advisor (Full Rule Engine) ────────────────────────────────────────
 
-function localAdvisor(query: string, b: FinancialBriefing, currency: string): string {
-  const q = query.toLowerCase();
-  const C = (v: number) => `${currency}${v.toLocaleString('en-IN')}`;
-  const top = b.topCategories[0];
-  const top2 = b.topCategories[1];
-
-  const isEmpty = b.transactionCount === 0;
-  const isInDef = b.net < 0;
-  const noIncome = b.totalIncome === 0;
-
-  // Guard: no data
-  if (isEmpty) {
+function localAdvisor(
+  query: string,
+  transactions: Transaction[],
+  briefing: FinancialBriefing,
+  currency: string
+): string {
+  if (briefing.transactionCount === 0) {
     return "I don't have any transactions to analyse yet. **Add your first transaction** using the + button and I'll start giving you personalised advice right away.\n\n[ACTION:ADD_TRANSACTION]";
   }
 
-  // ── Topic detection ───────────────────────────────────────────────
-
-  // Budget / deficit
-  if (/budget|over.?spend|deficit|limit/.test(q)) {
-    if (isInDef)
-      return `You're in a **deficit of ${C(Math.abs(b.net))}** this period. Your top two leaks are **${top?.name ?? 'spending'}** (${C(top?.amount ?? 0)}) and **${top2?.name ?? 'other'}** (${C(top2?.amount ?? 0)}). Start with a strict limit on just these two categories.\n\n[ACTION:CREATE_BUDGET]`;
-    return `Your budget is healthy — **${C(b.net)} surplus** this period (${b.savingsRate}% savings rate). To stay ahead, set limits on **${top?.name ?? 'your top category'}** before next month starts.\n\n[ACTION:CREATE_BUDGET]`;
+  const handlers = [
+    handleBudgetQuery,
+    handleSavingsQuery,
+    handleSpendingQuery,
+    handleSubscriptionsQuery,
+    handleGoalsQuery,
+    handleGeneralQuery,
+  ];
+  for (const handler of handlers) {
+    const result = handler(query, transactions, briefing, currency);
+    if (result !== null) return result;
   }
-
-  // Savings / save more
-  if (/sav(e|ing|ings)|investm|mutual fund|sip|fd|fixed deposit/.test(q)) {
-    if (noIncome)
-      return `No income logged yet. Add your salary or income source so I can calculate your savings rate.\n\n[ACTION:ADD_TRANSACTION]`;
-    if (b.savingsRate < 0)
-      return `You're spending **${Math.abs(b.savingsRate)}% more than you earn**. Before saving, close the gap — cut ${C(Math.abs(b.net))} from monthly expenses. Your highest cost is **${top?.name}** at ${C(top?.amount ?? 0)}.\n\n[ACTION:CREATE_BUDGET]`;
-    if (b.savingsRate < 10)
-      return `Your savings rate is **${b.savingsRate}%** — below the healthy 20% benchmark. Redirect just ${C(Math.round(b.totalIncome * 0.2 - b.net))} more per month from **${top?.name}** to hit 20%. Consider a recurring SIP on your payday.\n\n[ACTION:SET_GOAL]`;
-    if (b.savingsRate < 20)
-      return `Savings rate: **${b.savingsRate}%** — getting there. To hit 20%, reduce **${top?.name}** spending by about ${C(Math.round(b.topCategories[0]?.amount * 0.15 || 0))} next month.\n\n[ACTION:SET_GOAL]`;
-    return `Excellent! Savings rate: **${b.savingsRate}%** — above the 20% benchmark. Your surplus of **${C(b.net)}** should be working harder. Have you set a goal to channel it?\n\n[ACTION:SET_GOAL]`;
-  }
-
-  // Spending breakdown / where did my money go
-  if (/spend|spent|where|breakdown|categor|money go/.test(q)) {
-    if (!top)
-      return "No debit transactions yet. Start logging your expenses and I'll give you a full breakdown.";
-    const catList = b.topCategories
-      .slice(0, 3)
-      .map(c => `— **${c.name}** ${C(c.amount)} (${c.percent}%)`)
-      .join('\n');
-    return `You've spent **${C(b.totalSpent)}** total. Here's where it went:\n\n${catList}\n\nYour daily average is **${C(b.avgDailySpend)}/day**.\n\n[ACTION:VIEW_ANALYTICS]`;
-  }
-
-  // Largest expense
-  if (/largest|biggest|highest|most expensive|single/.test(q)) {
-    if (!b.largestExpense) return 'No expenses logged yet.';
-    return `Your largest single expense was **${b.largestExpense.merchant}** for **${C(b.largestExpense.amount)}** in **${b.largestExpense.category}**. If this was a one-off, great. If it repeats, consider setting a budget for that category.\n\n[ACTION:VIEW_HISTORY]`;
-  }
-
-  // Subscriptions
-  if (/subscri|netflix|spotify|streaming|recurring/.test(q)) {
-    if (b.subscriptionTotal === 0)
-      return `No subscription transactions detected yet. Tag your recurring services as **Subscriptions** and I can give you an audit.\n\n[ACTION:VIEW_SUBSCRIPTIONS]`;
-    return `Your subscriptions cost **${C(b.subscriptionTotal)}/month** — that's **${C(b.subscriptionTotal * 12)}/year**. Review which ones you actively use. Most people save 20–30% by cancelling one unused service.\n\n[ACTION:VIEW_SUBSCRIPTIONS]`;
-  }
-
-  // Health score / financial health
-  if (/health|score|performance|rating|how am i doing/.test(q)) {
-    const score =
-      b.savingsRate >= 20
-        ? 'Excellent 🟢'
-        : b.savingsRate >= 10
-          ? 'Good 🟡'
-          : b.savingsRate >= 0
-            ? 'Needs Work 🟠'
-            : 'Critical 🔴';
-    return `**Financial Health: ${score}**\n\n— Savings rate: **${b.savingsRate}%** (target: 20%)\n— Daily spend: **${C(b.avgDailySpend)}/day**\n— Subscriptions: **${C(b.subscriptionTotal)}/month**\n— Transactions logged: **${b.transactionCount}**\n\n[ACTION:VIEW_ANALYTICS]`;
-  }
-
-  // Income
-  if (/income|earn|salary|revenue|paych/.test(q)) {
-    if (noIncome)
-      return `No income transactions logged. Add your salary or any other income source with the + button.\n\n[ACTION:ADD_TRANSACTION]`;
-    return `You've logged **${C(b.totalIncome)}** in income. Your net after all expenses is **${C(b.net)}** (${b.savingsRate}% savings rate).\n\n[ACTION:VIEW_ANALYTICS]`;
-  }
-
-  // Export / report
-  if (/report|export|pdf|statement|history/.test(q)) {
-    return `You can export your full transaction history as a **PDF statement** or **CSV** from the Reports view. It includes income, expenses, category breakdown, and month-over-month comparison.\n\n[ACTION:EXPORT_REPORT]`;
-  }
-
-  // Goals
-  if (/goal|target|dream|plan|milestone/.test(q)) {
-    if (b.net <= 0)
-      return `To set meaningful goals, first close your current deficit of **${C(Math.abs(b.net))}**. Once you have a surplus, goals become achievable.\n\n[ACTION:CREATE_BUDGET]`;
-    return `With a monthly surplus of **${C(b.net)}**, you could reach a **${C(b.net * 12)}** goal in one year — or a **${C(b.net * 6)}** emergency fund in 6 months. What are you saving for?\n\n[ACTION:SET_GOAL]`;
-  }
-
-  // Anomaly / unusual
-  if (/unusual|anomal|weird|strange|different/.test(q)) {
-    if (b.unusualCount === 0)
-      return `No unusual spending patterns detected in your recent transactions. Everything looks consistent with your normal habits.\n\n[ACTION:VIEW_ANALYTICS]`;
-    return `I've detected **${b.unusualCount} unusual transaction(s)** that deviate from your normal spending patterns. Check the Analytics view for details.\n\n[ACTION:VIEW_ANALYTICS]`;
-  }
-
-  // Merchant-specific questions
-  if (/merchant|shop|store|vendor|restaurant|amazon|flipkart|swiggy|zomato/.test(q)) {
-    const top3m = b.topMerchants
-      .slice(0, 3)
-      .map(m => `— **${m.name}**: ${C(m.amount)}`)
-      .join('\n');
-    return `Your top merchants by spend:\n\n${top3m || '— No merchant data yet'}\n\n[ACTION:VIEW_HISTORY]`;
-  }
-
-  // EMI / loan / debt
-  if (/emi|loan|debt|credit card|borrow/.test(q)) {
-    return `To manage EMIs effectively: log each EMI payment under **Utilities** or a custom "Loan" category, then track it in your budget. Your current net is **${C(b.net)}** — ensure your EMI total stays under 40% of income.\n\n[ACTION:CREATE_BUDGET]`;
-  }
-
-  // Credit score / CIBIL
-  if (/credit|CIBIL|cibil|score|loan eligibility|credit health/.test(q)) {
-    if (!b.creditScore)
-      return `I don't have your credit score data yet. Connect your bank account via **Setu AA** in the Analytics → Credit Health section, and I'll be able to answer questions about your CIBIL score and loan eligibility.\n\n[ACTION:VIEW_ANALYTICS]`;
-    const band =
-      b.creditScore >= 750
-        ? 'Excellent'
-        : b.creditScore >= 700
-          ? 'Good'
-          : b.creditScore >= 600
-            ? 'Fair'
-            : 'Needs Improvement';
-    return `Your **CIBIL score** is **${b.creditScore}** (${band}) as of ${b.creditScoreDate ?? 'recently'}. The CIBIL range is 300-900.\n\n— **750+**: Excellent — you qualify for the best interest rates\n— **700-749**: Good — most loans will be approved\n— **600-699**: Fair — may face higher rates or reduced limits\n— **Below 600**: Needs improvement — consider secured credit or a credit-builder loan\n\nWould you like specific advice on improving your score?\n\n[ACTION:VIEW_ANALYTICS]`;
-  }
-
-  // Tax
-  if (/tax|it return|80c|deduction|tds/.test(q)) {
-    return `For Indian tax planning: Section 80C allows up to **₹1.5L** deduction (ELSS, PPF, EPF, LIC). Section 80D covers health insurance premiums. Your current income logged is **${C(b.totalIncome)}** — I recommend reviewing your tax liability in the Analytics → Tax Predictor section.\n\n[ACTION:VIEW_ANALYTICS]`;
-  }
-
-  // Advice / tips / help
-  if (/advice|tip|help|suggest|recommend|how/.test(q)) {
-    if (isInDef)
-      return `My top suggestion: you're **${C(Math.abs(b.net))}** in deficit. Cut **${top?.name ?? 'your top category'}** spending by 20% this week — that's about ${C(Math.round((top?.amount ?? 0) * 0.2))}. Small, consistent cuts beat big dramatic ones.\n\n[ACTION:CREATE_BUDGET]`;
-    return `You're doing well with a **${b.savingsRate}% savings rate**. My top tip: automate — set a budget for **${top?.name ?? 'your top category'}** and let SpendWise alert you when you're at 80%. Automation beats willpower every time.\n\n[ACTION:CREATE_BUDGET]`;
-  }
-
-  // Non-finance question guard
-  const isFinance =
-    /money|spend|budget|sav|income|expense|transaction|invest|buy|afford|rich|poor|debt|loan|tax|goal|category|merchant|sub|bill/.test(
-      q
-    );
-  if (!isFinance && q.length < 60) {
-    return `I'm your SpendWise financial advisor — I can only help with your budget, spending, savings, and financial goals. What would you like to know about your finances?`;
-  }
-
-  // General catch-all
-  return `Based on your **${b.transactionCount} transactions**: income **${C(b.totalIncome)}**, spent **${C(b.totalSpent)}**, net **${C(b.net)}** (${b.savingsRate}% savings rate). Your biggest cost is **${top?.name ?? 'not yet categorised'}**. What specific area would you like to explore?\n\n[ACTION:VIEW_ANALYTICS]`;
+  return "I'm not sure how to answer that. Try asking about your budget, spending, or savings.";
 }
 
 // ─── Proactive Nudge Engine ───────────────────────────────────────────────────

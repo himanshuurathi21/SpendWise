@@ -1,4 +1,4 @@
-/* eslint-disable no-console, @typescript-eslint/no-unused-vars */
+/* eslint-disable no-console */
 /**
  * Setu Account Aggregator (AA) Sandbox Mock
  *
@@ -51,7 +51,7 @@ export async function createSetuConsent(mobileNumber: string): Promise<SetuConse
  * Step 2: Poll for consent status (In production, use Webhooks instead)
  */
 export async function checkSetuConsentStatus(
-  consentId: string
+  _consentId: string
 ): Promise<'PENDING' | 'ACTIVE' | 'REJECTED'> {
   // Simulate network delay
   await new Promise(resolve => setTimeout(resolve, 500));

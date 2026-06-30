@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import {
   Transaction,
   Category,
@@ -11,8 +10,8 @@ import {
   Budget,
   BudgetPeriod,
 } from '@/types/finance';
-import { SpendingAlert, AppNotification, AppView } from '@/components/ui/types';
-import { SpendWiseStore, ParentalControlState } from '@/store';
+import { SpendingAlert, AppNotification } from '@/components/ui/types';
+import { ParentalControlState } from '@/store';
 import { CustomCategoryDef } from '@/types/index';
 
 export interface FinanceState {

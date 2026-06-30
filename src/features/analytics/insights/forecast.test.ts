@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { describe, it, expect, beforeEach } from 'vitest';
 import { forecastNextMonth } from '@/features/analytics/insights/forecast';
 import type { Transaction } from '@/types';
@@ -18,7 +17,7 @@ function makeTx(
     type,
     merchant: 'Test',
     description: '',
-    category: category as any,
+    category: category as unknown as Transaction['category'],
     tags: [],
   } as unknown as Transaction;
 }

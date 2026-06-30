@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * Centralized DOM and Global Type Definitions
  * Used to eliminate 'as any' casts for browser-specific APIs
@@ -59,9 +58,9 @@ export interface SpeechRecognition extends EventTarget {
 
 declare global {
   interface Window {
-    SpeechRecognition: any;
-    webkitSpeechRecognition: any;
-    MSStream?: any;
+    SpeechRecognition: { new (): SpeechRecognition };
+    webkitSpeechRecognition: { new (): SpeechRecognition };
+    MSStream?: unknown;
     Razorpay: {
       new (options: RazorpayOptions): RazorpayInstance;
     };

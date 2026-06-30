@@ -122,9 +122,7 @@ export default function HistoryViewMobile({
             key={cat}
             onClick={() => {
               haptic.light();
-              {
-                /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-              }
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               setActiveCategory(cat as any);
             }}
             className={`px-4 py-2 rounded-full text-[length:var(--fs-overline)] font-bold uppercase tracking-widest whitespace-nowrap border transition-all ${
