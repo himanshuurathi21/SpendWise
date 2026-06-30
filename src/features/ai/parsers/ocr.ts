@@ -21,7 +21,9 @@ export async function recognizeReceipt(imageBase64: string): Promise<string> {
   }
 }
 
-export function parseOfflineReceipt(rawText: string): Partial<Transaction> & { splits?: { label: string; amount: number; category: string }[] } {
+export function parseOfflineReceipt(
+  rawText: string
+): Partial<Transaction> & { splits?: { label: string; amount: number; category: string }[] } {
   const lines = rawText
     .split('\n')
     .map(l => l.trim())

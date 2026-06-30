@@ -200,7 +200,11 @@ function DraggingFactors({ score }: { score: CreditScore }) {
   );
 }
 
-const LoanEligibilityCards = memo(function LoanEligibilityCards({ eligibility }: { eligibility: LoanEligibility[] }) {
+const LoanEligibilityCards = memo(function LoanEligibilityCards({
+  eligibility,
+}: {
+  eligibility: LoanEligibility[];
+}) {
   const probabilityColors = {
     high: {
       bg: 'rgba(16,185,129,0.06)',

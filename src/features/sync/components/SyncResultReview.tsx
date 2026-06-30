@@ -41,9 +41,7 @@ export default function SyncResultReview({
               <p className="font-inter font-bold text-sm text-[var(--text-primary)]">
                 {tx.merchant}
               </p>
-              <p className="font-inter text-xs text-[var(--text-muted)] mt-0.5">
-                {tx.description}
-              </p>
+              <p className="font-inter text-xs text-[var(--text-muted)] mt-0.5">{tx.description}</p>
             </div>
             <div className="flex items-center gap-3 justify-between sm:justify-end">
               <span className="font-inter font-bold text-sm text-[var(--text-primary)]">

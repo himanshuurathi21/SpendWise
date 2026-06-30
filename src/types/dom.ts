@@ -58,8 +58,8 @@ export interface SpeechRecognition extends EventTarget {
 
 declare global {
   interface Window {
-    SpeechRecognition: { new(): SpeechRecognition };
-    webkitSpeechRecognition: { new(): SpeechRecognition };
+    SpeechRecognition: { new (): SpeechRecognition };
+    webkitSpeechRecognition: { new (): SpeechRecognition };
     MSStream?: unknown;
     Razorpay: {
       new (options: RazorpayOptions): RazorpayInstance;

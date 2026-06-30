@@ -36,8 +36,8 @@ export default function CategoryReassignView({
           <strong className="text-[var(--text-primary)]">
             {transactions.filter(t => t.category === reassigningCat.name).length}
           </strong>{' '}
-          transaction(s) categorized as <strong>"{reassigningCat.name}"</strong>. Before
-          deleting this category, please select a new category for these transactions.
+          transaction(s) categorized as <strong>"{reassigningCat.name}"</strong>. Before deleting
+          this category, please select a new category for these transactions.
         </p>
       </div>
 

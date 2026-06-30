@@ -186,9 +186,7 @@ export default function CategoryEditorView({
                 cursor: 'pointer',
                 transform: color === col ? 'scale(1.15)' : 'scale(1)',
                 boxShadow:
-                  color === col
-                    ? `0 0 0 2px var(--surface-card), 0 0 0 4px ${col}`
-                    : 'none',
+                  color === col ? `0 0 0 2px var(--surface-card), 0 0 0 4px ${col}` : 'none',
               }}
             />
           ))}

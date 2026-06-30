@@ -205,7 +205,7 @@ export async function pullTransactions(
   let path = `/transactions?user_id=eq.${userId}&order=date.desc`;
   if (since) path += `&date=gte.${since}`;
 
-  const rows = (await supabaseRequest(path, {}, token) ?? []) as Record<string, unknown>[];
+  const rows = ((await supabaseRequest(path, {}, token)) ?? []) as Record<string, unknown>[];
   return rows.map(r => ({
     id: r.id as string,
     date: r.date as string,

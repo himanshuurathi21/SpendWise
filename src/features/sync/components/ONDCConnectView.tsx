@@ -17,9 +17,7 @@ export default function ONDCConnectView({ onSetView, onONDCLinkSuccess }: ONDCCo
         <ArrowLeft size={18} /> Back to Sources
       </button>
       <h2 className="text-headline mb-2">Connect ONDC Buyer App</h2>
-      <p className="text-caption mb-8">
-        Select your ONDC-enabled app to sync order notifications.
-      </p>
+      <p className="text-caption mb-8">Select your ONDC-enabled app to sync order notifications.</p>
       <div className="grid gap-4">
         {ONDC_BUYER_APPS.map(app => (
           <button

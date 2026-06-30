@@ -58,8 +58,12 @@ function setupMocks({
     return mockStore;
   });
 
-  vi.mocked(useTransactions).mockReturnValue(mockTransactions as unknown as ReturnType<typeof useTransactions>);
-  vi.mocked(useCategories).mockReturnValue(mockCategories as unknown as ReturnType<typeof useCategories>);
+  vi.mocked(useTransactions).mockReturnValue(
+    mockTransactions as unknown as ReturnType<typeof useTransactions>
+  );
+  vi.mocked(useCategories).mockReturnValue(
+    mockCategories as unknown as ReturnType<typeof useCategories>
+  );
 }
 
 describe('useBudgets', () => {

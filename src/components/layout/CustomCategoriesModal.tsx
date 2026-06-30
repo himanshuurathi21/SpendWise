@@ -99,16 +99,19 @@ export default function CustomCategoriesModal({
     setEditingId(null);
   }, [name, monthlyLimit, editingId, onAdd, onUpdate, color, icon]);
 
-  const handleDeleteAttempt = useCallback((cat: CustomCategoryDef) => {
-    const usedCount = transactions.filter(t => t.category === cat.name).length;
-    if (usedCount > 0 && onReassign) {
-      setReassigningCat(cat);
-      const fallback = allCategories.find(c => c !== cat.name) || 'Other';
-      setSelectedFallback(fallback);
-    } else {
-      onDelete(cat.id);
-    }
-  }, [transactions, onReassign, onDelete, allCategories]);
+  const handleDeleteAttempt = useCallback(
+    (cat: CustomCategoryDef) => {
+      const usedCount = transactions.filter(t => t.category === cat.name).length;
+      if (usedCount > 0 && onReassign) {
+        setReassigningCat(cat);
+        const fallback = allCategories.find(c => c !== cat.name) || 'Other';
+        setSelectedFallback(fallback);
+      } else {
+        onDelete(cat.id);
+      }
+    },
+    [transactions, onReassign, onDelete, allCategories]
+  );
 
   const handleConfirmReassign = useCallback(() => {
     if (!reassigningCat) return;

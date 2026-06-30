@@ -70,7 +70,9 @@ export function useShakeFeedback(
 
     let isSubscribed = true;
 
-    const deviceMotion = DeviceMotionEvent as unknown as { requestPermission?: () => Promise<string> };
+    const deviceMotion = DeviceMotionEvent as unknown as {
+      requestPermission?: () => Promise<string>;
+    };
     if (typeof deviceMotion.requestPermission === 'function') {
       deviceMotion
         .requestPermission()

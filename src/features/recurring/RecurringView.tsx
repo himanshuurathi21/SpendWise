@@ -3,7 +3,6 @@ import { RefreshCw, Calendar, TrendingUp, Clock, Zap, LayoutGrid } from 'lucide-
 import { RecurringPattern, Transaction } from '@/types';
 import { useCategories } from '@/hooks/useCategories';
 
-
 interface RecurringViewProps {
   patterns: RecurringPattern[];
   currency?: string;
@@ -314,9 +313,7 @@ export default function RecurringView({
 
           {/* Price Hike Detection */}
           {transactions.length > 0 && (
-            <div className="card p-4 sm:p-5 mb-5">
-              {priceHikeDetectorProp}
-            </div>
+            <div className="card p-4 sm:p-5 mb-5">{priceHikeDetectorProp}</div>
           )}
 
           {patterns.length === 0 ? (

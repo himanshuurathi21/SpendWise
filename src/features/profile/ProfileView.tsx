@@ -377,7 +377,7 @@ export default function ProfileView({
         </>
       )}
 
-        {profileTab === 'billing' && billingViewProp}
+      {profileTab === 'billing' && billingViewProp}
 
       {profileTab === 'referral' && <ReferralView />}
 

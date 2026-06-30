@@ -189,42 +189,45 @@ export default function BankSyncView({
     }
   };
 
-  const handlePay = useCallback((amount: number, description: string) => {
-    const keyId = razorpayKeys?.keyId;
-    if (!keyId) {
-      setView('rzp-link');
-      return;
-    }
+  const handlePay = useCallback(
+    (amount: number, description: string) => {
+      const keyId = razorpayKeys?.keyId;
+      if (!keyId) {
+        setView('rzp-link');
+        return;
+      }
 
-    initiateRazorpayPayment({
-      keyId,
-      amount: amount,
-      description: description || 'UPI Payment',
-      prefillContact: undefined,
-      onSuccess: async result => {
-        setView('pay-parsing');
-        const parsed = await parseUPIPayment(description || result.description, '');
-        const tx: Transaction = {
-          id: `rzp_pay_${result.razorpay_payment_id}`,
-          date: new Date().toISOString(),
-          amount: result.amount,
-          type: 'debit',
-          category: parsed.category,
-          merchant: parsed.merchant,
-          description: `Razorpay UPI · ${result.razorpay_payment_id}`,
-          isNew: true,
-          confidence: parsed.confidence,
-          aiParsed: parsed.aiParsed,
-          tags: ['upi', 'razorpay'],
-        };
-        setLastTx(tx);
-        setCorrCat(parsed.category);
-        onAutoAddTransactions([tx]);
-        setView('pay-success');
-      },
-      onFailure: () => setView('pay-form'),
-    });
-  }, [razorpayKeys, onAutoAddTransactions]);
+      initiateRazorpayPayment({
+        keyId,
+        amount: amount,
+        description: description || 'UPI Payment',
+        prefillContact: undefined,
+        onSuccess: async result => {
+          setView('pay-parsing');
+          const parsed = await parseUPIPayment(description || result.description, '');
+          const tx: Transaction = {
+            id: `rzp_pay_${result.razorpay_payment_id}`,
+            date: new Date().toISOString(),
+            amount: result.amount,
+            type: 'debit',
+            category: parsed.category,
+            merchant: parsed.merchant,
+            description: `Razorpay UPI · ${result.razorpay_payment_id}`,
+            isNew: true,
+            confidence: parsed.confidence,
+            aiParsed: parsed.aiParsed,
+            tags: ['upi', 'razorpay'],
+          };
+          setLastTx(tx);
+          setCorrCat(parsed.category);
+          onAutoAddTransactions([tx]);
+          setView('pay-success');
+        },
+        onFailure: () => setView('pay-form'),
+      });
+    },
+    [razorpayKeys, onAutoAddTransactions]
+  );
 
   const applyCorrection = () => {
     if (!lastTx) return;
@@ -329,53 +332,56 @@ export default function BankSyncView({
     .reduce((s, t) => s + t.amount, 0);
   const aiParsedCount = recentTransactions.filter(t => t.aiParsed).length;
 
-  const handleRazorpayConnect = useCallback((keyId: string, secret: string) => {
-    setRazorpayKeys({ keyId, keySecret: secret });
-    setAccounts((p: LinkedAccount[]) => {
-      const filtered = p.filter(a => a.provider !== 'razorpay');
-      return [
-        {
-          id: 'rzp-auth',
-          provider: 'razorpay',
-          upiId: keyId.substring(0, 14) + '…',
-          linkedAt: new Date().toISOString(),
-          lastSynced: new Date().toISOString(),
-          status: 'active',
-        },
-        ...filtered,
-      ];
-    });
-    setView('dashboard');
-  }, [setRazorpayKeys]);
+  const handleRazorpayConnect = useCallback(
+    (keyId: string, secret: string) => {
+      setRazorpayKeys({ keyId, keySecret: secret });
+      setAccounts((p: LinkedAccount[]) => {
+        const filtered = p.filter(a => a.provider !== 'razorpay');
+        return [
+          {
+            id: 'rzp-auth',
+            provider: 'razorpay',
+            upiId: keyId.substring(0, 14) + '…',
+            linkedAt: new Date().toISOString(),
+            lastSynced: new Date().toISOString(),
+            status: 'active',
+          },
+          ...filtered,
+        ];
+      });
+      setView('dashboard');
+    },
+    [setRazorpayKeys]
+  );
 
   return (
     <div className="view-container">
       {view === 'dashboard' && (
-          <SyncDashboard
-            totalUPISpend={totalUPISpend}
-            aiParsedCount={aiParsedCount}
-            merchantMemoryCount={merchantMemoryCount}
-            accounts={accounts}
-            recentTransactions={recentTransactions}
-            syncingAccountId={syncingAccountId}
-            onSyncAccount={handleSyncAccount}
-            onSetView={setView}
-            currency={currency}
-            onAutoAddTransactions={onAutoAddTransactions}
-            onNavigate={onNavigate}
-            sharedWalletData={{
-              groups: sharedWalletsHook.groups.map((g: SharedGroup) => ({
-                id: g.id,
-                name: g.name,
-                emoji: '👥',
-                memberCount: 0,
-              })),
-              pendingInvites: sharedWalletsHook.pendingInvites,
-              acceptInvite: sharedWalletsHook.acceptInvite,
-              declineInvite: sharedWalletsHook.declineInvite,
-              createGroup: sharedWalletsHook.createGroup,
-            }}
-          />
+        <SyncDashboard
+          totalUPISpend={totalUPISpend}
+          aiParsedCount={aiParsedCount}
+          merchantMemoryCount={merchantMemoryCount}
+          accounts={accounts}
+          recentTransactions={recentTransactions}
+          syncingAccountId={syncingAccountId}
+          onSyncAccount={handleSyncAccount}
+          onSetView={setView}
+          currency={currency}
+          onAutoAddTransactions={onAutoAddTransactions}
+          onNavigate={onNavigate}
+          sharedWalletData={{
+            groups: sharedWalletsHook.groups.map((g: SharedGroup) => ({
+              id: g.id,
+              name: g.name,
+              emoji: '👥',
+              memberCount: 0,
+            })),
+            pendingInvites: sharedWalletsHook.pendingInvites,
+            acceptInvite: sharedWalletsHook.acceptInvite,
+            declineInvite: sharedWalletsHook.declineInvite,
+            createGroup: sharedWalletsHook.createGroup,
+          }}
+        />
       )}
       {view === 'select-source' && <SelectSource onSetView={setView} />}
       {view === 'upi-link' && (

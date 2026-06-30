@@ -203,7 +203,10 @@ function processPaymentsToTransactions(payments: Record<string, unknown>[]): Tra
       amount: realAmount,
       type: 'credit',
       category: (p as any).method === 'upi' ? ('Transfer' as Category) : ('Salary' as Category),
-      merchant: (p as any).email || (p as any).contact || `Razorpay - ${(p as any).method?.toUpperCase() || 'Gateway'}`,
+      merchant:
+        (p as any).email ||
+        (p as any).contact ||
+        `Razorpay - ${(p as any).method?.toUpperCase() || 'Gateway'}`,
       description: (p as any).description || `Payment via ${(p as any).method}`,
       isNew: true,
       confidence: 1.0,

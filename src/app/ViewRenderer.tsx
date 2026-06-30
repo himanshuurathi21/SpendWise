@@ -118,7 +118,9 @@ export const ViewRenderer: React.FC<ViewRendererProps> = ({
   const { goals } = useGoals();
   const { netWorth } = usePortfolio();
   const { budgetStats } = useBudgets();
-  const injectedPricingCard = <PricingCard currentPlan={config?.isFamily ? 'family' : 'individual'} compact />;
+  const injectedPricingCard = (
+    <PricingCard currentPlan={config?.isFamily ? 'family' : 'individual'} compact />
+  );
   const injectedBillingView = (
     <BillingView
       onPlanChange={plan => {
@@ -126,11 +128,13 @@ export const ViewRenderer: React.FC<ViewRendererProps> = ({
       }}
     />
   );
-  const injectedMandateManager = (
-    <MandateManager mandates={store.mandates} currency={currency} />
+  const injectedMandateManager = <MandateManager mandates={store.mandates} currency={currency} />;
+  const injectedSubscriptionCalendar = (
+    <SubscriptionCalendar subscriptions={[]} currency={currency} />
   );
-  const injectedSubscriptionCalendar = <SubscriptionCalendar subscriptions={[]} currency={currency} />;
-  const injectedPriceHikeDetector = <PriceHikeDetector transactions={transactions} currency={currency} />;
+  const injectedPriceHikeDetector = (
+    <PriceHikeDetector transactions={transactions} currency={currency} />
+  );
 
   return (
     <>

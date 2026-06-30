@@ -139,7 +139,9 @@ export default function TaxReport({ transactions = [], currency = '\u20B9' }: Ta
     }
 
     const doc = win.document;
-    doc.write('<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>SpendWise ITR Tax Report</title></head><body></body></html>');
+    doc.write(
+      '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>SpendWise ITR Tax Report</title></head><body></body></html>'
+    );
     doc.close();
 
     const style = doc.createElement('style');
@@ -189,7 +191,10 @@ export default function TaxReport({ transactions = [], currency = '\u20B9' }: Ta
       tr.appendChild(td2);
       table1.appendChild(tr);
     }
-    for (const [label, val] of [['Old Regime Taxable Income', oldTaxableIncome] as [string, number], ['New Regime Taxable Income', newTaxableIncome] as [string, number]]) {
+    for (const [label, val] of [
+      ['Old Regime Taxable Income', oldTaxableIncome] as [string, number],
+      ['New Regime Taxable Income', newTaxableIncome] as [string, number],
+    ]) {
       const tr = doc.createElement('tr');
       if (label === 'Old Regime Taxable Income') tr.style.borderTop = '2px solid #1a202c';
       const td1 = doc.createElement('td');
@@ -221,7 +226,11 @@ export default function TaxReport({ transactions = [], currency = '\u20B9' }: Ta
     const taxRows = [
       { label: 'Base Tax', old: oldTax, new: newTax },
       { label: 'Cess (4%)', old: calculateCess(oldTax), new: calculateCess(newTax) },
-      { label: 'Surcharge', old: calculateSurcharge(oldTaxableIncome, oldTax), new: calculateSurcharge(newTaxableIncome, newTax) },
+      {
+        label: 'Surcharge',
+        old: calculateSurcharge(oldTaxableIncome, oldTax),
+        new: calculateSurcharge(newTaxableIncome, newTax),
+      },
     ];
     for (const row of taxRows) {
       const tr = doc.createElement('tr');

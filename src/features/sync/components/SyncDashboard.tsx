@@ -21,7 +21,6 @@ import { UPI_PROVIDERS } from '@/features/sync/parsers/upi';
 import CSVImporter from '@/features/sync/components/CSVImporter';
 import { CloudSync } from '@/features/sync/components/CloudSync';
 
-
 export interface SyncDashboardProps {
   totalUPISpend: number;
   aiParsedCount: number;
@@ -41,7 +40,12 @@ export interface SyncDashboardProps {
     pendingInvites: Array<{ memberId: string; groupName: string }>;
     acceptInvite: (memberId: string) => Promise<void>;
     declineInvite: (memberId: string) => Promise<void>;
-    createGroup: (name: string, purpose: string, creatorName: string, creatorEmoji?: string) => Promise<void>;
+    createGroup: (
+      name: string,
+      purpose: string,
+      creatorName: string,
+      creatorEmoji?: string
+    ) => Promise<void>;
   };
 }
 
@@ -60,7 +64,13 @@ export function SyncDashboard({
   sharedWalletData: sharedWalletDataProp,
 }: SyncDashboardProps) {
   const { groups, pendingInvites, acceptInvite, declineInvite, createGroup } =
-    sharedWalletDataProp ?? { groups: [], pendingInvites: [], acceptInvite: async () => {}, declineInvite: async () => {}, createGroup: async () => {} };
+    sharedWalletDataProp ?? {
+      groups: [],
+      pendingInvites: [],
+      acceptInvite: async () => {},
+      declineInvite: async () => {},
+      createGroup: async () => {},
+    };
 
   const formatDate = (iso: string) =>
     new Intl.DateTimeFormat('en-IN', {
