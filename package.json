@@ -37,7 +37,7 @@
     "@supabase/realtime-js": "^2.107.0",
     "canvas-confetti": "^1.9.4",
     "clsx": "2.1.1",
-    "dexie": "^4.4.2",
+    "dexie": "^4.4.4",
     "dexie-export-import": "^4.4.0",
     "dexie-react-hooks": "^4.4.0",
     "framer-motion": "^12.38.0",
