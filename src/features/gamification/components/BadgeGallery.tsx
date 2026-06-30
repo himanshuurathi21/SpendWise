@@ -38,7 +38,7 @@ function computeBadges(props: Props): Badge[] {
   const achieved = goals.filter(g => g.status === 'achieved').length;
   const savingsRate = totalIncome > 0 ? ((totalIncome - totalSpent) / totalIncome) * 100 : 0;
 
-  const categories = new Set(transactions.filter(t => t.category !== 'Other').map(t => t.category));
+  const categories = new Set(transactions.flatMap(t => t.category !== 'Other' ? [t.category] : []));
 
   return [
     {

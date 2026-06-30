@@ -8,6 +8,7 @@ export type AssetType =
   | 'other';
 export type LiabilityType =
   | 'loan'
+  | 'car_loan'
   | 'credit_card'
   | 'mortgage'
   | 'student_loan'

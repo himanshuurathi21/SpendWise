@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { AssetType, LiabilityType } from '@/types';
 
 export const ASSET_TYPES: { value: AssetType; label: string; icon: string; color: string }[] = [
@@ -18,7 +17,7 @@ export const LIABILITY_TYPES: {
   color: string;
 }[] = [
   { value: 'loan', label: 'Personal Loan', icon: '📋', color: '#ef4444' },
-  { value: 'car_loan' as any, label: 'Car Loan', icon: '🚗', color: '#ef4444' },
+  { value: 'car_loan', label: 'Car Loan', icon: '🚗', color: '#ef4444' },
   { value: 'credit_card', label: 'Credit Card', icon: '💳', color: '#f97316' },
   { value: 'mortgage', label: 'Mortgage', icon: '🏡', color: '#dc2626' },
   { value: 'student_loan', label: 'Student Loan', icon: '🎓', color: '#8b5cf6' },

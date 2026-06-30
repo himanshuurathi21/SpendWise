@@ -46,17 +46,17 @@ export async function syncLeaderboardStats(userId: string, stats: LeaderboardSta
 
 export async function fetchLeaderboard(cityTier = 'tier2'): Promise<LeaderboardEntry[]> {
   if (!isSupabaseConfigured) return [];
-  const rows: LeaderboardEntry[] =
+  const rows =
     (await supabaseRequest(
       `/leaderboard_snapshots?city_tier=eq.${cityTier}&order=xp.desc&limit=20`
     )) ?? [];
-  return rows;
+  return rows as unknown as LeaderboardEntry[];
 }
 
 export async function fetchFriendsLeaderboard(userHashes: string[]): Promise<LeaderboardEntry[]> {
   if (!isSupabaseConfigured || userHashes.length === 0) return [];
   const orClause = userHashes.map(h => `user_hash.eq.${h}`).join(',');
-  const rows: LeaderboardEntry[] =
+  const rows =
     (await supabaseRequest(`/leaderboard_snapshots?or=(${orClause})&order=xp.desc`)) ?? [];
-  return rows;
+  return rows as unknown as LeaderboardEntry[];
 }

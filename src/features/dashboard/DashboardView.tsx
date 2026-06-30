@@ -1,11 +1,6 @@
 import { useState, lazy, Suspense, useMemo } from 'react';
-import { AppView } from '@/types';
+import { AppView, SavingsGoal } from '@/types';
 import { FinanceState } from '@/types/state';
-// FSD VIOLATION: DashboardView acts as a page composer importing from multiple features
-// TODO: extract to a pages/ layer or inject feature components via props
-import { useGamification } from '@/features/gamification/hooks/useGamification';
-import { useGoals } from '@/features/goals/hooks/useGoals';
-import { usePortfolio } from '@/features/portfolio/hooks/usePortfolio';
 import LevelProgress from '@/features/gamification/components/LevelProgress';
 import DashboardHero from '@/features/dashboard/components/DashboardHero';
 import MagicInput from '@/features/ai/components/MagicInput';
@@ -33,7 +28,6 @@ import { useDashboardData } from '@/features/dashboard/hooks/useDashboardData';
 import { DashboardHeader } from '@/features/dashboard/components/DashboardHeader';
 import { AIInsights } from '@/features/dashboard/components/AIInsights';
 import { BankSyncCard } from '@/features/dashboard/components/BankSyncCard';
-import { useBudgets } from '@/hooks/useBudgets';
 import { getProactiveNudge } from '@/features/analytics/insights/advisor';
 import { useStore } from '@/store';
 
@@ -91,6 +85,14 @@ export function DashboardView({
   hideBalances = false,
   onTogglePrivacy,
   config,
+  streak: streakProp,
+  healthScore: healthScoreProp,
+  level: levelProp,
+  levelName: levelNameProp,
+  savingsRate: savingsRateProp,
+  goals: goalsProp,
+  netWorth: netWorthProp,
+  budgetStats: budgetStatsProp,
 }: {
   financeState: FinanceState;
   onAdd: Parameters<typeof MagicInput>[0]['onAdd'];
@@ -100,6 +102,14 @@ export function DashboardView({
   hideBalances?: boolean;
   onTogglePrivacy?: () => void;
   config: SpendWiseConfig | null;
+  streak?: number;
+  healthScore?: number;
+  level?: number;
+  levelName?: string;
+  savingsRate?: number;
+  goals?: SavingsGoal[];
+  netWorth?: number;
+  budgetStats?: Array<{ category: string; limit: number; spent: number }>;
 }) {
   const [showAllWidgets, setShowAllWidgets] = useState(false);
   const isMobile = useIsMobile();
@@ -113,16 +123,14 @@ export function DashboardView({
     balanceTrend,
     predictedEndOfMonth,
   } = financeState;
-  const {
-    streak,
-    healthScore,
-    level,
-    levelName,
-    savingsRate: gamificationSavingsRate,
-  } = useGamification(transactions);
-  const { goals } = useGoals();
-  const { netWorth } = usePortfolio();
-  const { budgetStats } = useBudgets();
+  const streak = streakProp ?? 0;
+  const healthScore = healthScoreProp ?? 75;
+  const level = levelProp ?? 1;
+  const levelName = levelNameProp ?? 'Beginner';
+  const gamificationSavingsRate = savingsRateProp;
+  const goals = useMemo(() => goalsProp ?? [], [goalsProp]);
+  const netWorth = netWorthProp ?? 0;
+  const budgetStats = useMemo(() => budgetStatsProp ?? [], [budgetStatsProp]);
   const razorpayKeys = useStore(s => s.razorpayKeys);
   const [dashboardInput, setDashboardInput] = useState('');
 

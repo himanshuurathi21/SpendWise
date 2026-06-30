@@ -18,10 +18,6 @@ import { NotificationsSection } from '@/features/profile/components/Notification
 import { useProfileView } from '@/features/profile/components/useProfileView';
 import { ProfileHeader } from '@/features/profile/components/ProfileHeader';
 import { FamilySafetySection } from '@/features/profile/components/FamilySafetySection';
-// FSD VIOLATION: importing from pricing and billing features — inject via props instead
-// TODO: remove direct imports once all consumers pass these as props
-import { PricingCard } from '@/features/pricing/PricingCard';
-import { BillingView } from '@/features/billing/BillingView';
 import { ReferralView } from '@/features/profile/components/ReferralView';
 
 interface ProfileViewProps {
@@ -226,24 +222,14 @@ export default function ProfileView({
                 onTestNotification={testNotification}
               />
             }
-            pricing={
-              pricingCardProp ?? (
-                <PricingCard currentPlan={config?.isFamily ? 'family' : 'individual'} compact />
-              )
-            }
+            pricing={pricingCardProp}
           />
         )}
 
         {profileTab === 'billing' && (
           <div className="view-enter space-y-6 pb-20">
             {mobileTabs}
-            {billingViewProp ?? (
-              <BillingView
-                onPlanChange={plan => {
-                  onUpdateConfig({ ...config, isFamily: plan === 'family' } as SpendWiseConfig);
-                }}
-              />
-            )}
+            {billingViewProp}
           </div>
         )}
 
@@ -380,9 +366,7 @@ export default function ProfileView({
           <FamilySafetySection onNavigate={onNavigate} />
 
           {/* Plan & Pricing */}
-          {pricingCardProp ?? (
-            <PricingCard currentPlan={config?.isFamily ? 'family' : 'individual'} compact />
-          )}
+          {pricingCardProp}
 
           {/* Notifications */}
           <NotificationsSection
@@ -393,14 +377,7 @@ export default function ProfileView({
         </>
       )}
 
-      {profileTab === 'billing' &&
-        (billingViewProp ?? (
-          <BillingView
-            onPlanChange={plan => {
-              onUpdateConfig({ ...config, isFamily: plan === 'family' } as SpendWiseConfig);
-            }}
-          />
-        ))}
+        {profileTab === 'billing' && billingViewProp}
 
       {profileTab === 'referral' && <ReferralView />}
 

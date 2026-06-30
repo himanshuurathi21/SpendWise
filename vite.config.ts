@@ -128,6 +128,21 @@ export default defineConfig(({ mode }) => ({
         ],
       },
     }),
+    {
+      name: 'csp',
+      transformIndexHtml() {
+        return [
+          {
+            tag: 'meta',
+            attrs: {
+              'http-equiv': 'Content-Security-Policy',
+              content: "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https://*.supabase.co https://api.exchangerate-api.com; font-src 'self' https://fonts.gstatic.com; frame-src 'none'; object-src 'none';",
+            },
+            injectTo: 'head',
+          },
+        ];
+      },
+    },
   ],
   resolve: {
     alias: {

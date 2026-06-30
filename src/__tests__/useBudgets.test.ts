@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook } from '@testing-library/react';
 
@@ -53,13 +52,14 @@ function setupMocks({
     categoryLimits,
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   vi.mocked(useStore).mockImplementation((selector: any) => {
     if (typeof selector === 'function') return selector(mockStore);
     return mockStore;
   });
 
-  vi.mocked(useTransactions).mockReturnValue(mockTransactions as any);
-  vi.mocked(useCategories).mockReturnValue(mockCategories as any);
+  vi.mocked(useTransactions).mockReturnValue(mockTransactions as unknown as ReturnType<typeof useTransactions>);
+  vi.mocked(useCategories).mockReturnValue(mockCategories as unknown as ReturnType<typeof useCategories>);
 }
 
 describe('useBudgets', () => {
@@ -207,7 +207,6 @@ describe('useBudgets', () => {
 
     it('supports rollover calculations', async () => {
       const today = new Date();
-      const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
       const prevMonthStart = new Date(today.getFullYear(), today.getMonth() - 1, 1);
 
       setupMocks({

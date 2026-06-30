@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import { callGemini } from '@/core/api/gemini';
 import { formatLocalYYYYMMDD } from '@/utils/date';
 
@@ -38,16 +37,20 @@ export const processReceipt = async (imageFile: File): Promise<OCRResult> => {
     });
 
     if (
-      !data.candidates ||
-      data.candidates.length === 0 ||
-      !data.candidates[0].content ||
-      !data.candidates[0].content.parts
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      !(data as any).candidates ||
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (data as any).candidates.length === 0 ||
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      !(data as any).candidates[0].content ||
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      !(data as any).candidates[0].content.parts
     ) {
       console.error('Gemini API structure mismatch:', data);
       throw new Error('Receipt analysis returned no results. Please ensure the image is clear.');
     }
-
-    const text = data.candidates[0].content.parts[0].text;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const text = (data as any).candidates[0].content.parts[0].text;
 
     try {
       const cleanJson = text.replace(/```json|```/g, '').trim();
@@ -60,7 +63,7 @@ export const processReceipt = async (imageFile: File): Promise<OCRResult> => {
         category: result.category || 'Other',
         rawText: result.rawText || text,
       };
-    } catch (e) {
+    } catch (_) {
       console.warn('Failed to parse Gemini response as JSON, falling back to regex:', text);
       const amountMatch = text.match(/(?:total|amount|sum|due)\s*[:$₹Rs]?\s*(\d+[.,]\d{2})/i);
       return {
@@ -143,7 +146,7 @@ export const processReceipt = async (imageFile: File): Promise<OCRResult> => {
         const d = new Date(dateMatch[0]);
         // R4 fix: use formatLocalYYYYMMDD for parsed receipt dates too
         if (!isNaN(d.getTime())) dateStr = formatLocalYYYYMMDD(d);
-      } catch (e) {}
+      } catch (_) {}
     }
 
     // 4. Find Category

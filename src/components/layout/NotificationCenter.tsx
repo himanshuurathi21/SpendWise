@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, memo } from 'react';
 import { X, Bell, CheckCheck, ExternalLink, Sparkles, AlarmClock } from 'lucide-react';
 import { AppNotification, AlertSeverity, AppView } from '@/types';
 
@@ -31,7 +31,7 @@ function relativeTime(ts: number): string {
   return `${days}d ago`;
 }
 
-function NotifRow({
+const NotifRow = memo(function NotifRow({
   notif,
   onMarkRead,
   onNavigate,
@@ -178,7 +178,7 @@ function NotifRow({
       )}
     </div>
   );
-}
+});
 
 export default function NotificationCenter({
   notifications,

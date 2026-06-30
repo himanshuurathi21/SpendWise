@@ -1,11 +1,19 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect } from 'react';
 import { useStore } from '@/store';
 import { haptic } from '@/core/haptic';
+import type { NotificationType, AlertSeverity } from '@/components/ui/types';
+
+interface ShakeNotification {
+  title: string;
+  message: string;
+  type: NotificationType;
+  icon: string;
+  severity: AlertSeverity;
+}
 
 export function useShakeFeedback(
   setShowFeedback: (show: boolean) => void,
-  addNotification: (notif: any) => void
+  addNotification: (notif: ShakeNotification) => void
 ) {
   const store = useStore();
 
@@ -62,15 +70,16 @@ export function useShakeFeedback(
 
     let isSubscribed = true;
 
-    if (typeof (DeviceMotionEvent as any).requestPermission === 'function') {
-      (DeviceMotionEvent as any)
+    const deviceMotion = DeviceMotionEvent as unknown as { requestPermission?: () => Promise<string> };
+    if (typeof deviceMotion.requestPermission === 'function') {
+      deviceMotion
         .requestPermission()
         .then((permission: string) => {
           if (permission === 'granted' && isSubscribed) {
             window.addEventListener('devicemotion', handleMotion, { passive: true });
           }
         })
-        .catch((err: any) => console.error('DeviceMotion permission error:', err));
+        .catch((err: unknown) => console.error('DeviceMotion permission error:', err));
     } else {
       window.addEventListener('devicemotion', handleMotion, { passive: true });
     }

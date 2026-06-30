@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any, react-hooks/exhaustive-deps */
 /**
  * useSharedWallets.ts
  *
@@ -13,8 +12,6 @@
  * Everything else (CRDT, data shapes, return API) is identical to the original.
  */
 
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment -- needs full type overhaul
-// @ts-nocheck
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   SharedGroup,
@@ -135,13 +132,13 @@ export function useSharedWallets(
     if (syncState === 'connected' && connectedPeers > 0) {
       syncEngine.broadcast(data);
     }
-  }, [connectedPeers, syncState]);
+  }, [connectedPeers, syncState, data]);
 
   // ── Derived slices ────────────────────────────────────────────────
   const groups = data.groups;
   const selectedGroup = groups.find(g => g.id === selectedGroupId) ?? null;
 
-  const activeIds = new Set(data.deleted_ids);
+  const activeIds = useMemo(() => new Set(data.deleted_ids), [data.deleted_ids]);
   const members = data.members.filter(m => m.group_id === selectedGroupId && !activeIds.has(m.id));
   const walletEntries = data.walletEntries.filter(
     w => w.group_id === selectedGroupId && !activeIds.has(w.id)
@@ -175,7 +172,7 @@ export function useSharedWallets(
         };
       })
       .filter(Boolean) as PendingInvite[];
-  }, [data.members, data.groups, userEmail, data.deleted_ids, activeIds]);
+  }, [data.members, data.groups, userEmail, activeIds]);
 
   // Wallet balance
   const walletBalance = walletEntries.reduce(
@@ -485,7 +482,7 @@ export function useSharedWallets(
   const importGroup = useCallback(
     async (encodedData: string): Promise<boolean> => {
       try {
-        let decoded: any;
+        let decoded: Record<string, unknown>;
         try {
           decoded = JSON.parse(decodeURIComponent(atob(encodedData)));
         } catch (e) {
@@ -495,20 +492,23 @@ export function useSharedWallets(
         if (decoded.type !== 'spendwise-shared-group') throw new Error('Invalid group data');
 
         mutate(prev => {
-          const id = decoded.group.id;
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const d = decoded as any;
+          const id = d.group.id;
           return {
-            groups: [...prev.groups.filter(g => g.id !== id), decoded.group],
-            members: [...prev.members.filter(m => m.group_id !== id), ...decoded.members],
+            groups: [...prev.groups.filter(g => g.id !== id), d.group],
+            members: [...prev.members.filter(m => m.group_id !== id), ...d.members],
             walletEntries: [
               ...prev.walletEntries.filter(w => w.group_id !== id),
-              ...decoded.walletEntries,
+              ...d.walletEntries,
             ],
-            expenses: [...prev.expenses.filter(e => e.group_id !== id), ...decoded.expenses],
-            goals: [...prev.goals.filter(g => g.group_id !== id), ...decoded.goals],
+            expenses: [...prev.expenses.filter(e => e.group_id !== id), ...d.expenses],
+            goals: [...prev.goals.filter(g => g.group_id !== id), ...d.goals],
             deleted_ids: prev.deleted_ids,
           };
         });
-        setSelectedGroupIdRaw(decoded.group.id);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        setSelectedGroupIdRaw((decoded as any).group.id);
         return true;
       } catch (e) {
         console.warn('[SharedWallets] Group import failed:', e);

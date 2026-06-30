@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 import { Transaction, Category } from '@/types';
 import { processNaturalLanguageExpense } from '@/features/ai/parsers/nlp';
 import { useStore } from '@/store';
@@ -187,24 +186,25 @@ export async function fetchRazorpayTransactions(auth: RazorpayAuth): Promise<Tra
   return processPaymentsToTransactions(mockPayments);
 }
 
-function processPaymentsToTransactions(payments: any[]): Transaction[] {
+function processPaymentsToTransactions(payments: Record<string, unknown>[]): Transaction[] {
   const transactions: Transaction[] = [];
 
+  /* eslint-disable @typescript-eslint/no-explicit-any */
   for (const p of payments) {
-    if (p.status !== 'captured') continue;
+    if ((p as any).status !== 'captured') continue;
 
-    const isoDate = new Date(p.created_at * 1000).toISOString();
-    const realAmount = typeof p.amount === 'number' ? p.amount / 100 : 0;
+    const isoDate = new Date((p as any).created_at * 1000).toISOString();
+    const realAmount = typeof (p as any).amount === 'number' ? (p as any).amount / 100 : 0;
     if (realAmount <= 0) continue;
 
     const t: Transaction = {
-      id: `rzp_${p.id}`,
+      id: `rzp_${(p as any).id}`,
       date: isoDate,
       amount: realAmount,
       type: 'credit',
-      category: p.method === 'upi' ? ('Transfer' as Category) : ('Salary' as Category),
-      merchant: p.email || p.contact || `Razorpay - ${p.method?.toUpperCase() || 'Gateway'}`,
-      description: p.description || `Payment via ${p.method}`,
+      category: (p as any).method === 'upi' ? ('Transfer' as Category) : ('Salary' as Category),
+      merchant: (p as any).email || (p as any).contact || `Razorpay - ${(p as any).method?.toUpperCase() || 'Gateway'}`,
+      description: (p as any).description || `Payment via ${(p as any).method}`,
       isNew: true,
       confidence: 1.0,
       aiParsed: false,
@@ -212,6 +212,7 @@ function processPaymentsToTransactions(payments: any[]): Transaction[] {
 
     transactions.push(t);
   }
+  /* eslint-enable @typescript-eslint/no-explicit-any */
 
   return transactions;
 }
@@ -226,7 +227,7 @@ export interface RazorpayPaymentOptions {
   prefillEmail?: string;
   prefillContact?: string;
   onSuccess: (details: RazorpayPaymentResult) => void;
-  onFailure?: (error: any) => void;
+  onFailure?: (error: unknown) => void;
 }
 
 export interface RazorpayPaymentResult {
@@ -250,7 +251,7 @@ export async function initiateRazorpayPayment(opts: RazorpayPaymentOptions): Pro
         script.onerror = () => reject(new Error('Razorpay SDK failed to load'));
         document.head.appendChild(script);
       });
-    } catch (err) {
+    } catch (_) {
       alert('Razorpay SDK failed to load. Check your internet connection.');
       return;
     }

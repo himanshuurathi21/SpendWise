@@ -1,19 +1,24 @@
-/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 /**
  * Fallback Patterns — SpendWise Master Voice Engine
  *
  * Contains regex patterns for local command parsing when Gemini is unavailable.
  */
 
-import { VoiceCommand, VoiceIntent, VoiceEntities, AppView } from '@/core/voiceCommands/types';
+import { VoiceIntent, VoiceEntities, AppView } from '@/core/voiceCommands/types';
 
 // Utility for Indian Number Parsing and Category normalization is still in main commandParser.ts
 // We import them from there in the actual implementation, but here we define the patterns.
 
+interface PatternHelpers {
+  normalizeCategory: (raw: string) => string;
+  parseIndianNumber: (text: string) => number | null;
+  NAV_MAP: Record<string, AppView>;
+}
+
 export interface Pattern {
   intent: VoiceIntent;
   regex: RegExp;
-  extract: (match: RegExpMatchArray, transcript: string, helpers: any) => VoiceEntities;
+  extract: (match: RegExpMatchArray, transcript: string, helpers: PatternHelpers) => VoiceEntities;
   summarize: (entities: VoiceEntities) => string;
   confidence: number;
 }

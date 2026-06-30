@@ -161,7 +161,7 @@ const AnalyticsSkeleton = () => (
 );
 
 // ─── Main export ──────────────────────────────────────────────────────────────
-export const SkeletonLoader: React.FC<SkeletonLoaderProps> = ({
+export const SkeletonLoader: React.FC<SkeletonLoaderProps> = React.memo(({
   variant = 'dashboard',
   className = '',
 }) => {
@@ -183,4 +183,4 @@ export const SkeletonLoader: React.FC<SkeletonLoaderProps> = ({
   })();
 
   return <div className={className}>{content}</div>;
-};
+});

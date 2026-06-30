@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback, memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   RefreshCw,
@@ -21,7 +21,7 @@ import {
 } from '@/core/creditScore';
 import { createSetuConsent, checkSetuConsentStatus } from '@/core/setuAA';
 
-function ScoreGauge({ score }: { score: number }) {
+const ScoreGauge = memo(function ScoreGauge({ score }: { score: number }) {
   const pct = ((score - 300) / 600) * 100;
   const color =
     score < 600 ? '#ef4444' : score < 700 ? '#f59e0b' : score < 750 ? '#eab308' : '#10b981';
@@ -67,7 +67,7 @@ function ScoreGauge({ score }: { score: number }) {
       </div>
     </div>
   );
-}
+});
 
 function ScoreTrendChart({ trend }: { trend: { month: string; score: number }[] }) {
   const maxScore = Math.max(...trend.map(t => t.score), 750);
@@ -200,7 +200,7 @@ function DraggingFactors({ score }: { score: CreditScore }) {
   );
 }
 
-function LoanEligibilityCards({ eligibility }: { eligibility: LoanEligibility[] }) {
+const LoanEligibilityCards = memo(function LoanEligibilityCards({ eligibility }: { eligibility: LoanEligibility[] }) {
   const probabilityColors = {
     high: {
       bg: 'rgba(16,185,129,0.06)',
@@ -277,7 +277,7 @@ function LoanEligibilityCards({ eligibility }: { eligibility: LoanEligibility[] 
       </div>
     </div>
   );
-}
+});
 
 function LoadingSkeleton() {
   return (

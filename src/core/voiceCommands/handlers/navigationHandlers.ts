@@ -1,11 +1,11 @@
-/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
-import { IntentHandler, formatCurrency, todayISO } from './types';
+import { IntentHandler } from './types';
 import { useStore } from '@/store';
+import { AppView } from '@/types';
 
 export const handleNavigate: IntentHandler = ({ command, navigate }) => {
   const { view } = command.entities;
   if (!view) return { success: false, message: 'Which section should I open?' };
-  navigate(view as any);
+  navigate(view as AppView);
   return { success: true, message: `📍 Navigating to ${view}` };
 };
 

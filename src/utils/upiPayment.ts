@@ -1,4 +1,4 @@
-/* eslint-disable no-console, @typescript-eslint/no-unused-vars */
+/* eslint-disable no-console */
 /**
  * UPI Payment Intent Utility
  * ─────────────────────────────────────────────────────────────────────────────
@@ -13,7 +13,7 @@
  *   upi://pay?pa=VPA&pn=NAME&am=AMOUNT&cu=INR&tn=NOTE&tr=TXNREF
  */
 
-import { Transaction, Category } from '@/types';
+import { Transaction } from '@/types';
 import { parseUPIPayment } from '@/utils/razorpaySync';
 
 export interface UPIPaymentParams {
@@ -281,8 +281,8 @@ export const UPI_APP_INTENTS = [
  * Future Implementation: WebOTP API or a React Native / Capacitor plugin.
  */
 export async function verifyPaymentViaSMS(
-  expectedAmount: number,
-  expectedRef: string
+  _expectedAmount: number,
+  _expectedRef: string
 ): Promise<boolean> {
   // Check if WebOTP API is available
   if ('OTPCredential' in window) {

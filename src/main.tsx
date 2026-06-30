@@ -13,10 +13,8 @@ import { setupPushNotifications } from '@/core/push/setupPushNotifications';
 
 const envErrors = validateEnv();
 if (envErrors.length > 0) {
-  throw new Error(
-    `SpendWise startup aborted: required environment variables are missing.\n${envErrors.join('\n')}\n\n` +
-      `Copy .env.example to .env.local and fill in the values.`
-  );
+  // Non-fatal: app works in offline/guest mode without Supabase
+  console.warn('[SpendWise] ' + envErrors.join(', ') + ' — running in offline/guest mode');
 }
 
 // Register service worker for PWA (immediate: ensures update on next visit)

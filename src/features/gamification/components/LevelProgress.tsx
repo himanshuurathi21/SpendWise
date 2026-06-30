@@ -5,7 +5,7 @@ import { useStore } from '@/store';
 import { useQuestReset } from '@/features/gamification/hooks/useQuestReset';
 import { AppView } from '@/components/ui/types';
 
-export default function LevelProgress({ onNavigate }: { onNavigate?: (view: AppView) => void }) {
+export default React.memo(function LevelProgress({ onNavigate }: { onNavigate?: (view: AppView) => void }) {
   const level = useStore(state => state.level);
   const totalXP = useStore(state => state.totalXP);
   const rank = useStore(state => state.rank);
@@ -106,4 +106,4 @@ export default function LevelProgress({ onNavigate }: { onNavigate?: (view: AppV
       )}
     </div>
   );
-}
+});

@@ -36,7 +36,7 @@ export function detectRecurringPatterns(transactions: Transaction[]): RecurringP
     .forEach(tx => {
       const key = normalise(tx.merchant);
       if (!groups.has(key)) groups.set(key, []);
-      groups.get(key)!.push(tx);
+      groups.get(key)?.push(tx);
     });
 
   const patterns: RecurringPattern[] = [];

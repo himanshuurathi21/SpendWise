@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import Tesseract from 'tesseract.js';
 import { Transaction } from '@/types';
 import { MERCHANT_CATEGORY_MAP } from '@/features/ai/parsers/common';
@@ -22,7 +21,7 @@ export async function recognizeReceipt(imageBase64: string): Promise<string> {
   }
 }
 
-export function parseOfflineReceipt(rawText: string): Partial<Transaction> & { splits?: any[] } {
+export function parseOfflineReceipt(rawText: string): Partial<Transaction> & { splits?: { label: string; amount: number; category: string }[] } {
   const lines = rawText
     .split('\n')
     .map(l => l.trim())

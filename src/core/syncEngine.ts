@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * syncEngine.ts — Supabase Realtime P2P sync
  *
@@ -17,7 +16,7 @@ import { SUPABASE_URL, SUPABASE_ANON_KEY } from '@/config/env';
 
 export type SyncState = 'disconnected' | 'connecting' | 'connected';
 
-type DataCallback = (data: any) => void;
+type DataCallback = (data: unknown) => void;
 type StateCallback = (state: SyncState, peers: number) => void;
 
 class SyncEngine {
@@ -98,7 +97,7 @@ class SyncEngine {
     }
   }
 
-  public broadcast(data: any) {
+  public broadcast(data: unknown) {
     // 1. Broadcast globally via Supabase Realtime
     if (this.channel) {
       try {
